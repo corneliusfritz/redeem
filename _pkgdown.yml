@@ -1,0 +1,69 @@
+url: https://corneliusfritz.github.io/redeem/
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  math-rendering: mathjax
+
+navbar:
+  structure:
+    left:  [home, reference, articles]
+    right: [github]
+  components:
+    articles:
+      text: Vignettes
+      menu:
+        - text: Introduction to Durational Event Models (DEM)
+          href: articles/introduction_to_dem.html
+        - text: Introduction to Relational Event Models (REM)
+          href: articles/introduction_to_rem.html
+        - text: Mathematical Definitions of Sufficient Statistics
+          href: articles/sufficient_statistics.html
+
+reference:
+  - title: Model Estimation
+    desc: Main estimation functions and controls for fitting Durational Event Models (DEM) and Relational Event Models (REM).
+    contents:
+      - dem
+      - rem
+      - dem_object
+      - rem_object
+      - control.redeem
+      - dem.simulate
+      - rem.simulate
+  
+  - title: Diagnostics & Post-Estimation
+    desc: Utilities for residual checking, out-of-sample likelihood evaluation, baseline intensity plotting, and node ranking.
+    contents:
+      - get_residuals
+      - get_oos_likelihood
+      - get_ranking
+      - plot_baseline
+      - predict_baseline_trend
+      - summary.redeem_result
+  
+  - title: Model Terms & Sufficient Statistics
+    desc: Functions representing standard dyadic, triadic, degree-based, and exogenous covariate terms to be used inside model formulas.
+    contents:
+      - redeem_terms
+      - Intercept
+      - intercept
+      - baseline
+      - degree
+      - degrees
+      - inertia
+      - reciprocity
+      - duration
+      - current_interaction
+      - dyadic_cov
+      - monadic_cov
+      - ps
+      - triangle
+      - common_partner
+      - starts_with("general_")
+      - starts_with("current_")
+      - starts_with("psAB")
+      
+  - title: Data Validation & Helpers
+    desc: Functions for verifying inputs.
+    contents:
+      - check_matrix
