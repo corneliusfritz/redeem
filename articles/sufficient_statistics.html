@@ -145,27 +145,6 @@ K}\)</span></td>
 </tr>
 </tbody>
 </table>
-<p>To achieve maximum performance during likelihood estimation and
-simulation, the transformations are computed
-<strong>incrementally</strong> on-the-fly inside the C++ state matrix.
-When a raw statistic increases by a value <span class="math inline">\(v\)</span>:</p>
-<ul>
-<li>
-<strong>Identity</strong>: <span class="math inline">\(f(s + v) =
-f(s) + v\)</span>.</li>
-<li>
-<strong>Log</strong>: <span class="math inline">\(f(s + v) = f(s) +
-\log(1 + v e^{-f(s)})\)</span>.</li>
-<li>
-<strong>Reciprocal</strong>: <span class="math inline">\(f(s + v) =
-\frac{1}{\frac{1}{f(s)} + v}\)</span>.</li>
-<li>
-<strong>Binary</strong>: <span class="math inline">\(f(s + v) =
-\mathbb{I}(s + v &gt; 0)\)</span>.</li>
-<li>
-<strong>Sigmoid</strong>: <span class="math inline">\(f(s + v) =
-\frac{K \cdot f(s) + v (1 - f(s))}{K + v (1 - f(s))}\)</span>.</li>
-</ul>
 <hr>
 </div>
 <div class="section level2">

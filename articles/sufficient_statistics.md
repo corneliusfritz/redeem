@@ -45,18 +45,6 @@ statistic. The package supports five standard transformations
 | **`bin`**      | \\f(s) = \mathbb{I}(s \> 0)\\ |
 | **`sig`**      | \\f(s) = \frac{s}{s + K}\\    |
 
-To achieve maximum performance during likelihood estimation and
-simulation, the transformations are computed **incrementally**
-on-the-fly inside the C++ state matrix. When a raw statistic increases
-by a value \\v\\:
-
-- **Identity**: \\f(s + v) = f(s) + v\\.
-- **Log**: \\f(s + v) = f(s) + \log(1 + v e^{-f(s)})\\.
-- **Reciprocal**: \\f(s + v) = \frac{1}{\frac{1}{f(s)} + v}\\.
-- **Binary**: \\f(s + v) = \mathbb{I}(s + v \> 0)\\.
-- **Sigmoid**: \\f(s + v) = \frac{K \cdot f(s) + v (1 - f(s))}{K + v
-  (1 - f(s))}\\.
-
 ------------------------------------------------------------------------
 
 ## Endogenous Network Statistics

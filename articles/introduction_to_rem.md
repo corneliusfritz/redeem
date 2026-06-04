@@ -133,7 +133,7 @@ summary(fit_rem)
 #> 
 #> Log-likelihood: -26.407 
 #> 
-#> Estimation time: 0.006738424 secs
+#> Estimation time: 0.006723642 secs
 ```
 
 ### Interpretation
