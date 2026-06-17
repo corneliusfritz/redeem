@@ -29,17 +29,24 @@ baseline intensity plotting, and node ranking.
 
 - [`get_residuals()`](https://corneliusfritz.github.io/redeem/reference/get_residuals.md)
   : Get residuals for model diagnostics (Cox-Snell Residuals)
+
 - [`get_oos_likelihood()`](https://corneliusfritz.github.io/redeem/reference/get_oos_likelihood.md)
   : Out-of-sample Log-Likelihood (Proper Scoring Rule)
+
 - [`get_ranking()`](https://corneliusfritz.github.io/redeem/reference/get_ranking.md)
   : Get ranking for test events (Out-of-Sample Goodness-of-Fit)
+
 - [`plot_baseline()`](https://corneliusfritz.github.io/redeem/reference/plot_baseline.md)
-  : Plot Baseline Intensity
+  : Plot the Estimated Baseline Intensity
+
 - [`predict_baseline_trend()`](https://corneliusfritz.github.io/redeem/reference/predict_baseline_trend.md)
   : Predict the baseline intensity trend at one or more future time
   points
+
 - [`summary(`*`<redeem_result>`*`)`](https://corneliusfritz.github.io/redeem/reference/summary.redeem_result.md)
-  : Summary of REDEEM Model Results
+  :
+
+  Summary of a `redeem_result` Model Fit
 
 ## Model Terms & Sufficient Statistics
 

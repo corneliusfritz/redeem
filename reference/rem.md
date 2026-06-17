@@ -166,7 +166,6 @@ Sociological Methodology, 38(1), 155-200.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
 # Simulate some relational event data
 n <- 20
 events <- matrix(c(
@@ -184,5 +183,16 @@ fit <- rem(
   control = control.redeem(it_max = 50)
 )
 summary(fit)
-} # }
+#> Call:
+#> rem(events = events, formula = ~1, n_nodes = n, control = control.redeem(it_max = 50))
+#> 
+#> Fixed Effects:
+#>           Estimate Std. Error t value  Pr(>|t|)    
+#> Intercept -5.65249    0.57735 -9.7904 < 2.2e-16 ***
+#> ---
+#> Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+#> 
+#> Log-likelihood: -19.957 
+#> 
+#> Estimation time: 0.004939795 secs 
 ```

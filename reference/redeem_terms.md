@@ -135,6 +135,11 @@ The implemented terms are grouped into five categories:
 
   Arguments passed to the underlying initialization function.
 
+## Value
+
+A `redeem_term` object (a list containing structural information about
+the statistic) to be used inside model formulas.
+
 ## Multi-Stream Event Covariates
 
 Most endogenous terms support covariates calculated from multiple event

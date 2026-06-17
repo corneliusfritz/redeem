@@ -171,7 +171,7 @@ summary(fit_dem)
 #>   AIC: 40.05804 
 #>   BIC: 40.45249 
 #> 
-#> Total estimation time: 0.008655548 secs
+#> Total estimation time: 0.00909853 secs
 ```
 
 ### Interpretation
