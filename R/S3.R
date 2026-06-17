@@ -110,11 +110,36 @@ print.summary.dem <- function(x, ...) {
   invisible(x)
 }
 
-#' Summary of REDEEM Model Results
+#' Summary of a \code{redeem_result} Model Fit
+#'
+#' Computes a summary of a fitted \code{redeem_result} object, collecting
+#' the estimated fixed effects, log-likelihood, and (if present) degree and
+#' temporal baseline effects into a structured list suitable for printing.
 #'
 #' @method summary redeem_result
 #' @param object A `redeem_result` object.
-#' @param ... Additional arguments.
+#' @param ... Additional arguments (currently unused).
+#' @return An object of class \code{summary.redeem_result}, which is a list
+#'   containing:
+#' \itemize{
+#'   \item \code{coefficients}: A numeric matrix with one row per fixed-effect
+#'     covariate and columns \code{Estimate}, \code{Std. Error}, \code{t value},
+#'     and \code{Pr(>|t|)}.
+#'   \item \code{llh}: The log-likelihood of the fitted model (scalar).
+#'   \item \code{degree_summary}: A list with summary statistics (\code{n},
+#'     \code{n_unidentifiable}, \code{mean}, \code{sd}, \code{range}) of the
+#'     estimated degree effects, only present when more than 10 degree
+#'     parameters were estimated.
+#'   \item \code{degree_effects}: A named numeric vector of estimated degree
+#'     effects, only present when 10 or fewer degree parameters were estimated.
+#'   \item \code{time_summary}: A list with summary statistics of the estimated
+#'     temporal baseline effects, only present when more than 10 time intervals
+#'     were used.
+#'   \item \code{time_effects}: A named numeric vector of estimated temporal
+#'     baseline effects, only present when 10 or fewer time intervals were used.
+#'   \item \code{iter}: Integer; the number of iterations performed by the
+#'     optimizer (\code{NA} if history was not saved).
+#' }
 #' @export
 summary.redeem_result <- function(object, ...) {
   # Core effects
@@ -494,11 +519,18 @@ plot.rem <- function(x, baseline = FALSE, ...) {
   }
 }
 
-#' Plot Baseline Intensity
+#' Plot the Estimated Baseline Intensity
+#'
+#' Draws a step-function plot of the estimated piecewise-constant baseline
+#' intensity against time. The function dispatches to class-specific methods
+#' for \code{\link{dem}}, \code{\link{rem}}, and \code{redeem_result} objects.
 #'
 #' @param x A \code{\link{dem}}, \code{\link{rem}}, or
-#'   \code{\link[=summary.redeem_result]{redeem_result}} object.
-#' @param ... Additional arguments passed to `graphics::plot`.
+#'   \code{redeem_result} object produced by \code{\link{dem}} or
+#'   \code{\link{rem}}.
+#' @param ... Additional arguments passed to \code{graphics::plot}.
+#' @return The original object \code{x} is returned invisibly. Called
+#'   primarily for its side effect of producing a plot.
 #' @export
 plot_baseline <- function(x, ...) {
   UseMethod("plot_baseline")
@@ -849,14 +881,14 @@ predict.dem <- function(object, time = NULL, type = c("response", "lp", "terms")
         term_cols <- setdiff(names(df_diss), c("from", "to", "mode"))
         names(df_diss)[names(df_diss) %in% term_cols] <- paste0("dissolution_", term_cols)
       }
-      
+
       combined_dt <- data.table::rbindlist(list(df_form, df_diss), fill = TRUE)
-      
+
       term_cols_combined <- setdiff(names(combined_dt), c("from", "to", "mode"))
       for (col in term_cols_combined) {
         data.table::set(combined_dt, which(is.na(combined_dt[[col]])), col, 0)
       }
-      
+
       return(as.data.frame(combined_dt))
     }
   }
@@ -944,7 +976,7 @@ predict_transition_helper <- function(model, data, type) {
       nu <- deg_vals[(n_nodes + 1):(2 * n_nodes)]
       sender_contrib <- mu[data$from]
       receiver_contrib <- nu[data$to]
-      
+
       sender_contrib[is.na(sender_contrib)] <- 0
       receiver_contrib[is.na(receiver_contrib)] <- 0
 
@@ -954,7 +986,7 @@ predict_transition_helper <- function(model, data, type) {
     } else {
       degree_contrib <- deg_vals[data$from] + deg_vals[data$to]
       degree_contrib[is.na(degree_contrib)] <- 0
-      
+
       deg_contribs[["degree_effects"]] <- degree_contrib
       lp_degree <- degree_contrib
     }

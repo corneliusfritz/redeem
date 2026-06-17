@@ -64,27 +64,6 @@ separately to obtain individual term processing details. It then identifies uniq
 across both formulas and combines the term data, transformations, and coefficient names
 into a single output list, structured for use in further modeling or evaluation.
 }
-\examples{
-\dontrun{
-# Define simple event data
-event_data <- matrix(c(
-  1.2, 1, 5, 1,
-  2.5, 1, 5, 0,
-  3.1, 2, 8, 1,
-  4.4, 2, 8, 0
-), ncol = 4, byrow = TRUE)
-colnames(event_data) <- c("time", "from", "to", "type")
-
-# Preprocess the formulas
-formula_preprocess(
-  formula_1_0 = ~ current_interaction() + current_common_partners(),
-  formula_0_1 = ~ general_common_partners(),
-  events = event_data,
-  n_nodes = 10
-)
-}
-
-}
 \seealso{
 \code{\link{formula_preprocess_single}}
 }

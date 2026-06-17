@@ -2,15 +2,40 @@
 % Please edit documentation in R/S3.R
 \name{summary.redeem_result}
 \alias{summary.redeem_result}
-\title{Summary of REDEEM Model Results}
+\title{Summary of a \code{redeem_result} Model Fit}
 \usage{
 \method{summary}{redeem_result}(object, ...)
 }
 \arguments{
-\item{object}{A `redeem_result` object.}
+\item{object}{A \code{redeem_result} object.}
 
-\item{...}{Additional arguments.}
+\item{...}{Additional arguments (currently unused).}
+}
+\value{
+An object of class \code{summary.redeem_result}, which is a list
+  containing:
+\itemize{
+  \item \code{coefficients}: A numeric matrix with one row per fixed-effect
+    covariate and columns \code{Estimate}, \code{Std. Error}, \code{t value},
+    and \code{Pr(>|t|)}.
+  \item \code{llh}: The log-likelihood of the fitted model (scalar).
+  \item \code{degree_summary}: A list with summary statistics (\code{n},
+    \code{n_unidentifiable}, \code{mean}, \code{sd}, \code{range}) of the
+    estimated degree effects, only present when more than 10 degree
+    parameters were estimated.
+  \item \code{degree_effects}: A named numeric vector of estimated degree
+    effects, only present when 10 or fewer degree parameters were estimated.
+  \item \code{time_summary}: A list with summary statistics of the estimated
+    temporal baseline effects, only present when more than 10 time intervals
+    were used.
+  \item \code{time_effects}: A named numeric vector of estimated temporal
+    baseline effects, only present when 10 or fewer time intervals were used.
+  \item \code{iter}: Integer; the number of iterations performed by the
+    optimizer (\code{NA} if history was not saved).
+}
 }
 \description{
-Summary of REDEEM Model Results
+Computes a summary of a fitted \code{redeem_result} object, collecting
+the estimated fixed effects, log-likelihood, and (if present) degree and
+temporal baseline effects into a structured list suitable for printing.
 }

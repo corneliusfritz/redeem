@@ -91,7 +91,6 @@
 #'   components of the returned object and S3 methods.
 #'
 #' @examples
-#' \dontrun{
 #' # Simulate some relational event data
 #' n <- 20
 #' events <- matrix(c(
@@ -109,7 +108,6 @@
 #'   control = control.redeem(it_max = 50)
 #' )
 #' summary(fit)
-#' }
 #' @importFrom stats formula model.matrix update
 #' @export
 rem <- function(events,

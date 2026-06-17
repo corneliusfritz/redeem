@@ -118,6 +118,9 @@ of degree statistics (default \code{FALSE}).}
 
 \item{...}{Arguments passed to the underlying initialization function.}
 }
+\value{
+A \code{redeem_term} object (a list containing structural information about the statistic) to be used inside model formulas.
+}
 \description{
 The help pages of \code{\link{rem}} and \code{\link{dem}} describe the model
 formulation and estimation details. This page documents all statistics

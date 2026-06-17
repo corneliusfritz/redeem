@@ -115,7 +115,6 @@ partial likelihood using the \code{survival} package. In this path:
 }
 
 \examples{
-\dontrun{
 # Simulate some relational event data
 n <- 20
 events <- matrix(c(
@@ -133,7 +132,6 @@ fit <- rem(
   control = control.redeem(it_max = 50)
 )
 summary(fit)
-}
 }
 \references{
 Fritz, C., Rastelli, R., Fop, M., & Caimo, A. (2026). Scalable Durational Event Models:

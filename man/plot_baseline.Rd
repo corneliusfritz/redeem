@@ -2,16 +2,23 @@
 % Please edit documentation in R/S3.R
 \name{plot_baseline}
 \alias{plot_baseline}
-\title{Plot Baseline Intensity}
+\title{Plot the Estimated Baseline Intensity}
 \usage{
 plot_baseline(x, ...)
 }
 \arguments{
 \item{x}{A \code{\link{dem}}, \code{\link{rem}}, or
-\code{\link[=summary.redeem_result]{redeem_result}} object.}
+\code{redeem_result} object produced by \code{\link{dem}} or
+\code{\link{rem}}.}
 
-\item{...}{Additional arguments passed to `graphics::plot`.}
+\item{...}{Additional arguments passed to \code{graphics::plot}.}
+}
+\value{
+The original object \code{x} is returned invisibly. Called
+primarily for its side effect of producing a plot.
 }
 \description{
-Plot Baseline Intensity
+Draws a step-function plot of the estimated piecewise-constant baseline
+intensity against time. The function dispatches to class-specific methods
+for \code{\link{dem}}, \code{\link{rem}}, and \code{redeem_result} objects.
 }
