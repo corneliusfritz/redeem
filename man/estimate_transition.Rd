@@ -29,7 +29,8 @@ estimate_transition(
   use_glm = FALSE,
   legacy = FALSE,
   inf_unidentifiable = TRUE,
-  events = NULL
+  events = NULL,
+  mpl = FALSE
 )
 }
 \description{

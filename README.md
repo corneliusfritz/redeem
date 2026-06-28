@@ -4,14 +4,6 @@
 
 **redeem** is an R package for the estimation of **Durational Event Models (DEM)** and **Relational Event Models (REM)**. It features a scalable block-coordinate ascent algorithm designed to handle high-dimensional network data with thousands of actors and time-varying effects.
 
-## Key Features
-
-- **Theory-Aligned**: Implements the framework described in *"Scalable Durational Event Models: Application to Physical and Digital Interactions"* (arXiv:2504.00049).
-- **Decoupled intensities**: Separately models the incidence (formation) and duration (dissolution) of events.
-- **Scalable Estimation**: Uses a block-coordinate ascent algorithm (MM-based) to efficiently estimate the model.
-- **Flexible Baselines**: Supports constant, piecewise-constant, and semiparametric baselines.
-- **Support for Constraints**: Handles simultaneous interaction constraints (e.g., phone calls where actors can only be in one call at a time).
-
 ## Installation
 
 You can install the development version of **redeem** from GitHub:
