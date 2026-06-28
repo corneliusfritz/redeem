@@ -2,7 +2,7 @@ Package: redeem
 Type: Package
 Title: Relational Event and Durational Event Models
 Version: 1.0.0
-Date: 2026-04-30
+Date: 2026-06-18
 Author: Cornelius Fritz [aut, cre]
 Maintainer: Cornelius Fritz <corneliusfritz2010@gmail.com>
 Authors@R: person("Cornelius", "Fritz", , "corneliusfritz2010@gmail.com", role = c("aut", "cre"))
@@ -12,7 +12,7 @@ Description: Model relational and durational events in a
     support for time-varying covariates, windowed statistics, and
     high-dimensional node-level fixed effects. References include
     Fritz et al. (2026) "Scalable Durational Event Models: Application to
-    Physical and Digital Interactions" <https://arxiv.org/abs/2504.00049>.
+    Physical and Digital Interactions" <doi:10.48550/arXiv.2504.00049>.
 License: GPL-3
 Depends: R (>= 4.0.0)
 Imports: 

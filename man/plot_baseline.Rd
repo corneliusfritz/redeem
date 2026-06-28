@@ -15,7 +15,7 @@ plot_baseline(x, ...)
 }
 \value{
 The original object \code{x} is returned invisibly. Called
-primarily for its side effect of producing a plot.
+  primarily for its side effect of producing a plot.
 }
 \description{
 Draws a step-function plot of the estimated piecewise-constant baseline

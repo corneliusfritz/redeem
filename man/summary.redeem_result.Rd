@@ -7,7 +7,7 @@
 \method{summary}{redeem_result}(object, ...)
 }
 \arguments{
-\item{object}{A \code{redeem_result} object.}
+\item{object}{A `redeem_result` object.}
 
 \item{...}{Additional arguments (currently unused).}
 }
