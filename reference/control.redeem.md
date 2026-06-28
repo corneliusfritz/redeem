@@ -22,7 +22,8 @@ control.redeem(
   estimate = "Blockwise",
   legacy = FALSE,
   check_matrix = FALSE,
-  inf_unidentifiable = TRUE
+  inf_unidentifiable = TRUE,
+  mpl = FALSE
 )
 ```
 
