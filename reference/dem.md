@@ -296,5 +296,5 @@ summary(fit)
 #>   AIC: 37.17892 
 #>   BIC: 35.95151 
 #> 
-#> Total estimation time: 0.01068187 secs 
+#> Total estimation time: 0.01252842 secs 
 ```

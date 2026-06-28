@@ -15,7 +15,7 @@ summary(object, ...)
 
 - object:
 
-  A `redeem_result` object.
+  A \`redeem_result\` object.
 
 - ...:
 
