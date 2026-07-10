@@ -23,8 +23,7 @@ estimate_mmt(
   return_data = TRUE,
   save_hist = TRUE,
   use_glm = FALSE,
-  inf_unidentifiable = TRUE,
-  mpl = FALSE
+  inf_unidentifiable = TRUE
 )
 }
 \arguments{

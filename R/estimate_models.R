@@ -395,11 +395,11 @@ estimate_mmt <- function(data,
             est_degree = c(est_mu, est_nu), n_nodes = n_nodes,
             directed = TRUE, update_sender = TRUE
           )$est_degree
-          
+
           # We need to update prediction after each coordinate step to be mathematically identical to before
           offset_degree_tmp <- est_pos[data$from] + est_pos[n_nodes + data$to]
           pred_tmp <- exp(offset_degree_tmp + offset_core + offset_time)
-          
+
           est_pos <- update_degree_fast(
             from_v = data$from, to_v = data$to,
             event_v = data$event, prediction_v = pred_tmp,
@@ -407,14 +407,14 @@ estimate_mmt <- function(data,
             est_degree = est_pos, n_nodes = n_nodes,
             directed = TRUE, update_sender = FALSE
           )$est_degree
-          
+
           mu_pos <- est_pos[seq_len(n_nodes)]
           nu_pos <- est_pos[(n_nodes + 1):(2 * n_nodes)]
 
           # Step 2: x2 = G(x1)
           offset_degree_tmp <- mu_pos[data$from] + nu_pos[data$to]
           pred_tmp <- exp(offset_degree_tmp + offset_core + offset_time)
-          
+
           est_pos_pos <- update_degree_fast(
             from_v = data$from, to_v = data$to,
             event_v = data$event, prediction_v = pred_tmp,
@@ -422,10 +422,10 @@ estimate_mmt <- function(data,
             est_degree = est_pos, n_nodes = n_nodes,
             directed = TRUE, update_sender = TRUE
           )$est_degree
-          
+
           offset_degree_tmp <- est_pos_pos[seq_len(n_nodes)][data$from] + est_pos_pos[(n_nodes + 1):(2*n_nodes)][data$to]
           pred_tmp <- exp(offset_degree_tmp + offset_core + offset_time)
-          
+
           est_pos_pos <- update_degree_fast(
             from_v = data$from, to_v = data$to,
             event_v = data$event, prediction_v = pred_tmp,
@@ -433,7 +433,7 @@ estimate_mmt <- function(data,
             est_degree = est_pos_pos, n_nodes = n_nodes,
             directed = TRUE, update_sender = FALSE
           )$est_degree
-          
+
           mu_pos_pos <- est_pos_pos[seq_len(n_nodes)]
           nu_pos_pos <- est_pos_pos[(n_nodes + 1):(2 * n_nodes)]
 
@@ -450,7 +450,7 @@ estimate_mmt <- function(data,
           # Final Step: x_final = G(x_acc)
           offset_degree_tmp <- est_acc_point[seq_len(n_nodes)][data$from] + est_acc_point[(n_nodes + 1):(2*n_nodes)][data$to]
           pred_tmp <- exp(offset_degree_tmp + offset_core + offset_time)
-          
+
           est_acc_final <- update_degree_fast(
             from_v = data$from, to_v = data$to,
             event_v = data$event, prediction_v = pred_tmp,
@@ -458,10 +458,10 @@ estimate_mmt <- function(data,
             est_degree = est_acc_point, n_nodes = n_nodes,
             directed = TRUE, update_sender = TRUE
           )$est_degree
-          
+
           offset_degree_tmp <- est_acc_final[seq_len(n_nodes)][data$from] + est_acc_final[(n_nodes + 1):(2*n_nodes)][data$to]
           pred_tmp <- exp(offset_degree_tmp + offset_core + offset_time)
-          
+
           est_acc_final <- update_degree_fast(
             from_v = data$from, to_v = data$to,
             event_v = data$event, prediction_v = pred_tmp,
@@ -506,7 +506,7 @@ estimate_mmt <- function(data,
           # Step 2: x2 = G(x1)
           offset_degree_tmp <- est_pos[data$from] + est_pos[data$to]
           pred_tmp <- exp(offset_degree_tmp + offset_core + offset_time)
-          
+
           est_pos_pos <- update_degree_fast(
             from_v = data$from, to_v = data$to,
             event_v = data$event, prediction_v = pred_tmp,
@@ -526,7 +526,7 @@ estimate_mmt <- function(data,
           # Final Step: x_final = G(x_acc)
           offset_degree_tmp <- est_acc_point[data$from] + est_acc_point[data$to]
           pred_tmp <- exp(offset_degree_tmp + offset_core + offset_time)
-          
+
           est_acc_final <- update_degree_fast(
             from_v = data$from, to_v = data$to,
             event_v = data$event, prediction_v = pred_tmp,
@@ -560,10 +560,10 @@ estimate_mmt <- function(data,
             est_degree = c(est_mu, est_nu), n_nodes = n_nodes,
             directed = TRUE, update_sender = TRUE
           )$est_degree
-          
+
           offset_degree_tmp <- est_degree[seq_len(n_nodes)][data$from] + est_degree[(n_nodes + 1):(2*n_nodes)][data$to]
           pred_tmp <- exp(offset_degree_tmp + offset_core + offset_time)
-          
+
           est_degree <- update_degree_fast(
             from_v = data$from, to_v = data$to,
             event_v = data$event, prediction_v = pred_tmp,
@@ -571,10 +571,10 @@ estimate_mmt <- function(data,
             est_degree = est_degree, n_nodes = n_nodes,
             directed = TRUE, update_sender = FALSE
           )$est_degree
-          
+
           est_mu <- est_degree[seq_len(n_nodes)]
           est_nu <- est_degree[(n_nodes + 1):(2 * n_nodes)]
-          
+
           # Identifiability shift
           finite_nu <- which(is.finite(est_nu) & est_nu > -25)
           if (length(finite_nu) > 0) {
@@ -592,7 +592,7 @@ estimate_mmt <- function(data,
             est_degree = est_degree, n_nodes = n_nodes,
             directed = FALSE
           )$est_degree
-          
+
           est_degree[est_degree < -50] <- -50
           offset_degree <- est_degree[data$from] + est_degree[data$to]
         }
@@ -648,7 +648,7 @@ estimate_mmt <- function(data,
     }
     prediction <- exp(offset_degree + offset_core + offset_time)
     prediction[!is.finite(prediction)] <- safe_max(prediction[is.finite(prediction)])
-    
+
     if (estimate_time) {
       gamma_full <- if (full_baseline) est_time else c(0, est_time)
       event_idx <- which(data$event > 0)
@@ -756,6 +756,7 @@ estimate_mmt <- function(data,
   time_slices_arg <- if (estimate_time) data$time_slices else rep(1, nrow(data))
   time_slices_arg[is.na(time_slices_arg)] <- 1
 
+  # browser()
   information <- get_A_B_C_D_E_F_exact(
     from_v = data$from,
     to_v = data$to,
@@ -768,39 +769,80 @@ estimate_mmt <- function(data,
     full_baseline = full_baseline
   )
 
-  # Fisher Information and Covariance calculation
-  identifiable_pop <- diag(information$B_mat) != 0
-  inf_D <- information$D_mat[identifiable_pop, , drop = FALSE]
-  inf_F <- information$F_mat[identifiable_pop, , drop = FALSE]
-  inf_B <- information$B_mat[identifiable_pop, identifiable_pop, drop = FALSE]
-
-  if (estimate_time) {
-    tmp <- sweep(inf_F, 2, 1 / information$C_mat, "*")
-    Q_2 <- inf_B - tmp %*% t(inf_F)
-    Q_2_inv <- tryCatch(
-      {
-        if (nrow(Q_2) > 0) solve(Q_2) else matrix(numeric(0), 0, 0)
-      },
-      error = function(e) {
-        if (nrow(Q_2) > 0) MASS::ginv(Q_2) else matrix(numeric(0), 0, 0)
-      }
-    )
-    Y_inv_11 <- t(tmp) %*% Q_2_inv %*% tmp
-    diag(Y_inv_11) <- 1 / information$C_mat + diag(Y_inv_11)
-    Y_inv_12 <- -t(tmp) %*% Q_2_inv
-    fisher_info <- information$A_mat - (information$E_mat %*% Y_inv_11 + t(inf_D) %*% t(Y_inv_12)) %*% t(information$E_mat) -
-      (information$E_mat %*% Y_inv_12 + t(inf_D) %*% Q_2_inv) %*% inf_D
+  if (estimate_degree) {
+    # Original profiling logic (adjusting for both degree and baseline parameters)
+    identifiable_pop <- diag(information$B_mat) != 0
+    inf_D <- information$D_mat[identifiable_pop, , drop = FALSE]
+    inf_F <- information$F_mat[identifiable_pop, , drop = FALSE]
+    inf_B <- information$B_mat[identifiable_pop, identifiable_pop, drop = FALSE]
+    if (estimate_time) {
+      tmp <- sweep(inf_F, 2, 1 / information$C_mat, "*")
+      Q_2 <- inf_B - tmp %*% t(inf_F)
+      Q_2_inv <- tryCatch(
+        {
+          if (nrow(Q_2) > 0) solve(Q_2) else matrix(numeric(0), 0, 0)
+        },
+        error = function(e) {
+          if (nrow(Q_2) > 0) MASS::ginv(Q_2) else matrix(numeric(0), 0, 0)
+        }
+      )
+      Y_inv_11 <- t(tmp) %*% Q_2_inv %*% tmp
+      diag(Y_inv_11) <- 1 / information$C_mat + diag(Y_inv_11)
+      Y_inv_12 <- -t(tmp) %*% Q_2_inv
+      fisher_info <- information$A_mat - (information$E_mat %*% Y_inv_11 + t(inf_D) %*% t(Y_inv_12)) %*% t(information$E_mat) -
+        (information$E_mat %*% Y_inv_12 + t(inf_D) %*% Q_2_inv) %*% inf_D
+    } else {
+      A_inv <- tryCatch(
+        {
+          if (nrow(inf_B) > 0) solve(inf_B) else matrix(numeric(0), 0, 0)
+        },
+        error = function(e) {
+          if (nrow(inf_B) > 0) MASS::ginv(inf_B) else matrix(numeric(0), 0, 0)
+        }
+      )
+      fisher_info <- information$A_mat - t(inf_D) %*% A_inv %*% inf_D
+    }
   } else {
-    A_inv <- tryCatch(
-      {
-        if (nrow(inf_B) > 0) solve(inf_B) else matrix(numeric(0), 0, 0)
-      },
-      error = function(e) {
-        if (nrow(inf_B) > 0) MASS::ginv(inf_B) else matrix(numeric(0), 0, 0)
-      }
-    )
-    fisher_info <- information$A_mat - t(inf_D) %*% A_inv %*% inf_D
+    # If estimate_degree = FALSE, only profile out the baseline/time effects (if any)
+    if (estimate_time) {
+      fisher_info <- information$A_mat - sweep(information$E_mat, 2, 1 / information$C_mat, "*") %*% t(information$E_mat)
+    } else {
+      fisher_info <- information$A_mat
+    }
   }
+  # # Fisher Information and Covariance calculation
+  # identifiable_pop <- diag(information$B_mat) != 0
+  # inf_D <- information$D_mat[identifiable_pop, , drop = FALSE]
+  # inf_F <- information$F_mat[identifiable_pop, , drop = FALSE]
+  # inf_B <- information$B_mat[identifiable_pop, identifiable_pop, drop = FALSE]
+  #
+  # if (estimate_time) {
+  #   tmp <- sweep(inf_F, 2, 1 / information$C_mat, "*")
+  #   Q_2 <- inf_B - tmp %*% t(inf_F)
+  #   Q_2_inv <- tryCatch(
+  #     {
+  #       if (nrow(Q_2) > 0) solve(Q_2) else matrix(numeric(0), 0, 0)
+  #     },
+  #     error = function(e) {
+  #       if (nrow(Q_2) > 0) MASS::ginv(Q_2) else matrix(numeric(0), 0, 0)
+  #     }
+  #   )
+  #   Y_inv_11 <- t(tmp) %*% Q_2_inv %*% tmp
+  #   diag(Y_inv_11) <- 1 / information$C_mat + diag(Y_inv_11)
+  #   Y_inv_12 <- -t(tmp) %*% Q_2_inv
+  #   fisher_info <- information$A_mat - (information$E_mat %*% Y_inv_11 + t(inf_D) %*% t(Y_inv_12)) %*% t(information$E_mat) -
+  #     (information$E_mat %*% Y_inv_12 + t(inf_D) %*% Q_2_inv) %*% inf_D
+  # } else {
+  #   A_inv <- tryCatch(
+  #     {
+  #       if (nrow(inf_B) > 0) solve(inf_B) else matrix(numeric(0), 0, 0)
+  #     },
+  #     error = function(e) {
+  #       if (nrow(inf_B) > 0) MASS::ginv(inf_B) else matrix(numeric(0), 0, 0)
+  #     }
+  #   )
+  #   fisher_info <- information$A_mat - t(inf_D) %*% A_inv %*% inf_D
+  # }
 
   diag(fisher_info)[diag(fisher_info) == 0] <- 1e-09
   fisher_info_identizable <- fisher_info[identifiable, identifiable, drop = FALSE]
