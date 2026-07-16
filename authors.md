@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/corneliusfritz/redeem/blob/v1.0/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/corneliusfritz/redeem/blob/main/DESCRIPTION)
 
 Fritz C (2026). *redeem: Relational Event and Durational Event Models*.
 R package version 1.0.0, <https://corneliusfritz.github.io/redeem/>.

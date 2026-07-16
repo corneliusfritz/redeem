@@ -32,7 +32,6 @@ estimate_transition(
   use_glm = FALSE,
   legacy = FALSE,
   inf_unidentifiable = TRUE,
-  events = NULL,
-  mpl = FALSE
+  events = NULL
 )
 ```
