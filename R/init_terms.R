@@ -132,7 +132,11 @@ InitRedeemTerm.inertia <- function(arglist, n_nodes, model_type, directed, ...) 
 }
 
 #' @keywords internal
-InitRedeemTerm.number_interaction <- InitRedeemTerm.inertia
+InitRedeemTerm.number_interaction <- function(arglist, n_nodes, model_type, directed, ...) {
+  res <- InitRedeemTerm.inertia(arglist, n_nodes, model_type, directed, ...)
+  res$base_name <- "number_interaction"
+  res
+}
 
 #' @keywords internal
 InitRedeemTerm.current_interaction <- function(arglist, n_nodes, model_type, directed, ...) {
@@ -150,7 +154,11 @@ InitRedeemTerm.current_interaction <- function(arglist, n_nodes, model_type, dir
 }
 
 #' @keywords internal
-InitRedeemTerm.duration <- InitRedeemTerm.current_interaction
+InitRedeemTerm.duration <- function(arglist, n_nodes, model_type, directed, ...) {
+  res <- InitRedeemTerm.current_interaction(arglist, n_nodes, model_type, directed, ...)
+  res$base_name <- "duration"
+  res
+}
 
 #' @keywords internal
 InitRedeemTerm.reciprocity <- function(arglist, n_nodes, model_type, directed, ...) {

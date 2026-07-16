@@ -299,7 +299,12 @@ rem <- function(events,
 
   formula_names <- names(preprocessed$preprocess_0_1$coef_names)
   formula_new <- if (length(formula_names) > 0) {
-    formula(paste("~", paste(collapse = "+ ", formula_names)))
+    has_intercept_name <- any(tolower(formula_names) %in% c("intercept", "(intercept)"))
+    if (has_intercept_name) {
+      formula(paste("~", paste(collapse = "+ ", formula_names)))
+    } else {
+      formula(paste("~ -1 +", paste(collapse = "+ ", formula_names)))
+    }
   } else {
     ~1
   }
@@ -337,12 +342,13 @@ rem <- function(events,
       }
       preprocessed_tmp <- cbind(preprocessed_tmp, model.matrix(~ -1 + time_cat, preprocessed_tmp))
 
-      # Determine if we need a full baseline (no other non-degree terms)
-      full_baseline <- !fixed_effects && length(names(preprocessed$coef_names)) == 0
+      # Determine if we need a full baseline (no intercept or degree terms)
+      has_intercept <- "Intercept" %in% names(preprocessed$coef_names)
+      full_baseline <- !fixed_effects && !has_intercept
 
       if (full_baseline) {
         time_cat_names <- paste0("time_cat", levels(preprocessed_tmp$time_cat))
-        formula_new <- formula(paste("~ -1 +", paste(time_cat_names, collapse = " + ")))
+        formula_new <- update(formula_new, new = paste("~ . -Intercept -1 +", paste(time_cat_names, collapse = " + ")))
       } else {
         time_cat_names <- paste0("time_cat", levels(preprocessed_tmp$time_cat)[-1])
         if (length(time_cat_names) > 0) {

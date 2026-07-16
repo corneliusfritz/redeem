@@ -1528,6 +1528,18 @@ match_coefficients <- function(user_coefs, internal_names, internal_keys = NULL)
     clean_internal_plural <- gsub("s$", "", clean_internal)
     user_names_plural <- gsub("s$", "", user_names)
 
+    # Treat "number_interaction" and "inertia" as synonyms
+    clean_internal_plural <- gsub("^number_interaction$", "inertia", clean_internal_plural)
+    user_names_plural <- gsub("^number_interaction$", "inertia", user_names_plural)
+    clean_internal <- gsub("^number_interaction$", "inertia", clean_internal)
+    user_names <- gsub("^number_interaction$", "inertia", user_names)
+
+    # Treat "duration" and "current_interaction" as synonyms
+    clean_internal_plural <- gsub("^duration$", "current_interaction", clean_internal_plural)
+    user_names_plural <- gsub("^duration$", "current_interaction", user_names_plural)
+    clean_internal <- gsub("^duration$", "current_interaction", clean_internal)
+    user_names <- gsub("^duration$", "current_interaction", user_names)
+
     for (i in unmatched) {
       m <- match(user_names[i], clean_internal)
       if (is.na(m)) m <- match(user_names_plural[i], clean_internal)
@@ -1761,7 +1773,14 @@ estimate_transition <- function(data,
 
   if (estimate_method == "NR") {
     # Full Newton-Raphson using glm.fit
-    formula_tmp <- update(formula_new, new = "event ~ . -1")
+
+    has_explicit_intercept <- any(tolower(attr(terms(formula_new), "term.labels")) == "intercept")
+    exclude_intercept <- (attr(terms(formula_new), "intercept") == 0) || has_explicit_intercept || estimate_degree
+    formula_tmp <- if (exclude_intercept) {
+      update(formula_new, new = "event ~ . -1")
+    } else {
+      update(formula_new, new = "event ~ .")
+    }
     environment(formula_tmp) <- environment()
     mm <- tryCatch(
       {
@@ -1946,7 +1965,13 @@ estimate_transition <- function(data,
     return(res)
   } else if (estimate_method == "GD") {
     # Gradient Descent (not optimized currently)
-    X <- model.matrix(update(formula_new, new = "event ~ . + offset(offset) - 1"), data = data)
+    has_explicit_intercept <- any(tolower(attr(terms(formula_new), "term.labels")) == "intercept")
+    exclude_intercept <- (attr(terms(formula_new), "intercept") == 0) || has_explicit_intercept || estimate_degree
+    X <- if (exclude_intercept) {
+      model.matrix(update(formula_new, new = "event ~ . + offset(offset) - 1"), data = data)
+    } else {
+      model.matrix(update(formula_new, new = "event ~ . + offset(offset)"), data = data)
+    }
 
     # Ensure coef matches X columns
     all_coefs <- c(coefs_core, coefs_degree, coefs_time)
@@ -2165,7 +2190,7 @@ process_event_actors <- function(events, n_nodes = NULL, directed = TRUE) {
     to_vals <- events[, col_to]
   }
 
-  is_string <- is.character(from_vals) || is.factor(from_vals) || 
+  is_string <- is.character(from_vals) || is.factor(from_vals) ||
                is.character(to_vals) || is.factor(to_vals)
 
   if (is_string) {
