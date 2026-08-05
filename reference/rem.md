@@ -194,5 +194,5 @@ summary(fit)
 #> 
 #> Log-likelihood: -19.957 
 #> 
-#> Estimation time: 0.004846096 secs 
+#> Estimation time: 0.005027533 secs 
 ```

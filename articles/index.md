@@ -6,5 +6,5 @@
   Models](https://corneliusfritz.github.io/redeem/articles/introduction_to_dem.md):
 - [Introduction to Relational Event
   Models](https://corneliusfritz.github.io/redeem/articles/introduction_to_rem.md):
-- [Mathematical Definitions of Sufficient
+- [Mathematical Definitions and Formula Specifications of Sufficient
   Statistics](https://corneliusfritz.github.io/redeem/articles/sufficient_statistics.md):
