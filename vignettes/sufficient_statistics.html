@@ -12,7 +12,7 @@
 
 
 
-<title>Mathematical Definitions of Sufficient Statistics</title>
+<title>Mathematical Definitions and Formula Specifications of Sufficient Statistics</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -48,8 +48,9 @@ overflow: visible;
 }
 </style>
 <style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -60,7 +61,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -336,348 +337,515 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Mathematical Definitions of Sufficient
-Statistics</h1>
+<h1 class="title toc-ignore">Mathematical Definitions and Formula
+Specifications of Sufficient Statistics</h1>
 
 
+<div id="TOC">
+<ul>
+<li><a href="#overview" id="toc-overview">Overview</a></li>
+<li><a href="#statistic-transformations" id="toc-statistic-transformations">Statistic Transformations</a></li>
+<li><a href="#baseline-and-nuisance-terms" id="toc-baseline-and-nuisance-terms">Baseline and Nuisance
+Terms</a></li>
+<li><a href="#endogenous-dyadic-terms" id="toc-endogenous-dyadic-terms">Endogenous Dyadic Terms</a></li>
+<li><a href="#triadic-closure-and-shared-partners" id="toc-triadic-closure-and-shared-partners">Triadic Closure and Shared
+Partners</a></li>
+<li><a href="#degree-and-centrality-statistics" id="toc-degree-and-centrality-statistics">Degree and Centrality
+Statistics</a></li>
+<li><a href="#exogenous-statistics" id="toc-exogenous-statistics">Exogenous Statistics</a></li>
+<li><a href="#complete-model-formula-examples" id="toc-complete-model-formula-examples">Complete Model Formula
+Examples</a></li>
+</ul>
+</div>
 
 <div id="overview" class="section level2">
 <h2>Overview</h2>
-<p>The <strong>redeem</strong> package models the intensities of
-interaction formation and dissolution using a log-linear formulation.
-The intensity (rate) for a dyad <span class="math inline">\((i,j)\)</span> at time <span class="math inline">\(t\)</span> is:</p>
+<p>The <strong>redeem</strong> package provides a flexible, log-linear
+framework for modeling interaction event sequences in relational
+networks. Models are fitted using <code>rem()</code> for
+<strong>Relational Event Models (REM)</strong> and <code>dem()</code>
+for <strong>Durational Event Models (DEM)</strong>.</p>
+<p>In both model classes, event intensities are specified on the
+right-hand side of R formulas passed to <code>rem()</code> or
+<code>dem()</code> via structural statistics <span class="math inline">\(s_{i,j}(\mathscr{H}_t)\)</span> calculated from
+event history <span class="math inline">\(\mathscr{H}_t\)</span>:</p>
 <p><span class="math display">\[\lambda_{i,j}(t) =
-\exp(s_{i,j}(\mathscr{H}_t)^\top \beta + \alpha_i + \alpha_j + f(t,
-\gamma))\]</span></p>
+\exp\left(s_{i,j}(\mathscr{H}_t)^\top \beta + \alpha_i + \alpha_j + f(t,
+\gamma)\right)\]</span></p>
 <p>where:</p>
 <ul>
 <li><span class="math inline">\(s_{i,j}(\mathscr{H}_t)\)</span> is a
-vector of <strong>sufficient statistics</strong> derived from the
-history of interactions <span class="math inline">\(\mathscr{H}_t\)</span> up to time <span class="math inline">\(t\)</span>.</li>
+vector of <strong>sufficient statistics</strong> derived from history
+<span class="math inline">\(\mathscr{H}_t\)</span> up to time <span class="math inline">\(t\)</span>.</li>
 <li><span class="math inline">\(\alpha_i, \alpha_j\)</span> are actor
-popularity parameters.</li>
+popularity / activity fixed effects (specified via <code>degree</code>
+or <code>degrees</code>).</li>
 <li><span class="math inline">\(f(t, \gamma) = \sum_{q=1}^Q \gamma_q
-\mathbb{I}(c_{q-1} \le t &lt; c_q)\)</span> is the baseline
-step-function representing temporal variation over change points <span class="math inline">\(0 = c_0 &lt; c_1 &lt; \dots &lt; c_Q\)</span>
-(with <span class="math inline">\(\gamma_1 = 0\)</span>).</li>
+\mathbb{I}(c_{q-1} \le t &lt; c_q)\)</span> is a baseline step-function
+over change points <span class="math inline">\(0 = c_0 &lt; c_1 &lt;
+\dots &lt; c_Q\)</span> (specified via <code>baseline()</code>).</li>
 </ul>
-<p>This vignette provides precise mathematical definitions for all
-sufficient network statistics implemented in the package, as well as a
-guide for adding custom statistics.</p>
-<p>The complete list of available formula terms is documented in the
-<code>redeem_terms</code> reference manual page. For model estimation,
-see the help pages for the models via <code>dem</code> and
-<code>rem</code>.</p>
+<p>Terms are specified as function calls on the right-hand side of model
+formulas (e.g.,
+<code>formula = ~ intercept() + inertia() + reciprocity()</code>). This
+vignette details the mathematical definitions of all supported
+sufficient statistics alongside examples of how they are specified in
+formula objects.</p>
+<p>For details on estimation procedures and options, see the help pages
+for <code>rem()</code>, <code>dem()</code>, and
+<code>control.redeem()</code>.</p>
 <hr />
 </div>
 <div id="statistic-transformations" class="section level2">
 <h2>Statistic Transformations</h2>
-<p>Each sufficient statistic <span class="math inline">\(s_{i,j}(\mathscr{H}_t)\)</span> is defined as a
-transformed count <span class="math inline">\(f(N(t))\)</span>, where
-<span class="math inline">\(N(t)\)</span> is a raw network statistic.
-The package supports five standard transformations <span class="math inline">\(f(\cdot)\)</span>:</p>
+<p>Each sufficient statistic <span class="math inline">\(s_{i,j}(\mathscr{H}_t)\)</span> can be modified by
+applying a transformation function <span class="math inline">\(f(\cdot)\)</span> to a raw network statistic <span class="math inline">\(x\)</span>. The package supports five standard
+transformations:</p>
 <table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
 <thead>
 <tr class="header">
 <th align="left">Transformation</th>
 <th align="left">Mathematical Definition</th>
+<th align="left">R Formula Syntax</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left"><strong><code>identity</code></strong></td>
-<td align="left"><span class="math inline">\(f(s) = s\)</span></td>
+<td align="left"><strong><code>identity</code></strong> (default)</td>
+<td align="left"><span class="math inline">\(f(x) = x\)</span></td>
+<td align="left"><code>transformation = &quot;identity&quot;</code></td>
 </tr>
 <tr class="even">
 <td align="left"><strong><code>log</code></strong></td>
-<td align="left"><span class="math inline">\(f(s) = \log(1 +
-s)\)</span></td>
+<td align="left"><span class="math inline">\(f(x) = \log(1 +
+x)\)</span></td>
+<td align="left"><code>transformation = &quot;log&quot;</code></td>
 </tr>
 <tr class="odd">
 <td align="left"><strong><code>recip</code></strong></td>
-<td align="left"><span class="math inline">\(f(s) =
-1/(1+s)\)</span></td>
+<td align="left"><span class="math inline">\(f(x) = \frac{1}{1 +
+x}\)</span></td>
+<td align="left"><code>transformation = &quot;recip&quot;</code></td>
 </tr>
 <tr class="even">
 <td align="left"><strong><code>bin</code></strong></td>
-<td align="left"><span class="math inline">\(f(s) = \mathbb{I}(s &gt;
+<td align="left"><span class="math inline">\(f(x) = \mathbb{I}(x &gt;
 0)\)</span></td>
+<td align="left"><code>transformation = &quot;bin&quot;</code></td>
 </tr>
 <tr class="odd">
 <td align="left"><strong><code>sig</code></strong></td>
-<td align="left"><span class="math inline">\(f(s) = \frac{s}{s +
+<td align="left"><span class="math inline">\(f(x) = \frac{x}{x +
 K}\)</span></td>
+<td align="left"><code>transformation = &quot;sig&quot;, K = 1</code></td>
 </tr>
 </tbody>
 </table>
-<p>To achieve maximum performance during likelihood estimation and
-simulation, the transformations are computed
-<strong>incrementally</strong> on-the-fly inside the C++ state matrix.
-When a raw statistic increases by a value <span class="math inline">\(v\)</span>:</p>
-<ul>
-<li><strong>Identity</strong>: <span class="math inline">\(f(s + v) =
-f(s) + v\)</span>.</li>
-<li><strong>Log</strong>: <span class="math inline">\(f(s + v) = f(s) +
-\log(1 + v e^{-f(s)})\)</span>.</li>
-<li><strong>Reciprocal</strong>: <span class="math inline">\(f(s + v) =
-\frac{1}{\frac{1}{f(s)} + v}\)</span>.</li>
-<li><strong>Binary</strong>: <span class="math inline">\(f(s + v) =
-\mathbb{I}(s + v &gt; 0)\)</span>.</li>
-<li><strong>Sigmoid</strong>: <span class="math inline">\(f(s + v) =
-\frac{K \cdot f(s) + v (1 - f(s))}{K + v (1 - f(s))}\)</span>.</li>
-</ul>
+<div id="formula-examples" class="section level4">
+<h4>Formula Examples</h4>
+<p>Transformations can be passed to any statistic via the
+<code>transformation</code> argument (and optional <code>K</code>
+parameter):</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># Default identity transformation</span></span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>formula_1 <span class="ot">&lt;-</span> <span class="er">~</span> <span class="fu">inertia</span>(<span class="at">transformation =</span> <span class="st">&quot;identity&quot;</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co"># Log-transformed count statistic</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>formula_2 <span class="ot">&lt;-</span> <span class="er">~</span> <span class="fu">inertia</span>(<span class="at">transformation =</span> <span class="st">&quot;log&quot;</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co"># Binary indicator (has dyad interacted at least once?)</span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>formula_3 <span class="ot">&lt;-</span> <span class="er">~</span> <span class="fu">reciprocity</span>(<span class="at">transformation =</span> <span class="st">&quot;bin&quot;</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a><span class="co"># Sigmoid-like saturation with parameter K = 5</span></span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>formula_4 <span class="ot">&lt;-</span> <span class="er">~</span> <span class="fu">general_common_partners</span>(<span class="at">type =</span> <span class="st">&quot;OSP&quot;</span>, <span class="at">transformation =</span> <span class="st">&quot;sig&quot;</span>, <span class="at">K =</span> <span class="dv">5</span>)</span></code></pre></div>
 <hr />
 </div>
-<div id="endogenous-network-statistics" class="section level2">
-<h2>Endogenous Network Statistics</h2>
-<p>These statistics capture structural dependencies within the network
-evolution.</p>
-<div id="intercept-intercept-intercept" class="section level3">
-<h3>1. Intercept (<code>Intercept</code> / <code>intercept</code>)</h3>
-<p>A constant term representing the baseline log-intensity. <span class="math display">\[s_{i,j}(\mathscr{H}_t) = 1\]</span></p>
 </div>
-<div id="inertia-inertia-number_interaction" class="section level3">
-<h3>2. Inertia (<code>inertia</code> /
-<code>number_interaction</code>)</h3>
-<p>Counts how many times the dyad <span class="math inline">\((i,j)\)</span> has initiated an interaction in the
-past. <span class="math display">\[s_{i,j}(\mathscr{H}_t) =
-f(N_{i,j}(t))\]</span> where <span class="math inline">\(N_{i,j}(t) =
-\sum_{k: t_k &lt; t} \mathbb{I}(i_k = i, j_k = j)\)</span> (or the
-windowed version <span class="math inline">\(N_{i,j}^w(t) = \sum_{k: t-w
-&lt; t_k &lt; t} \mathbb{I}(i_k = i, j_k = j)\)</span>).</p>
+<div id="baseline-and-nuisance-terms" class="section level2">
+<h2>Baseline and Nuisance Terms</h2>
+<p>These terms model baseline rates, step-function temporal variations,
+and actor-level fixed effects.</p>
+<div id="intercept-intercept-intercept" class="section level4">
+<h4>1. Intercept (<code>intercept</code> / <code>Intercept</code>)</h4>
+<p>Represents a constant baseline log-intensity across all dyads.</p>
+<p><span class="math display">\[s_{i,j}(\mathscr{H}_t) = 1\]</span></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Include a constant baseline intercept</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="sc">~</span> <span class="fu">intercept</span>()</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co"># Capitalized alias</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="sc">~</span> <span class="fu">Intercept</span>()</span></code></pre></div>
 </div>
-<div id="reciprocity-reciprocity" class="section level3">
-<h3>3. Reciprocity (<code>reciprocity</code>)</h3>
-<p>Models the tendency to reciprocate past interactions (directed only).
-<span class="math display">\[s_{i,j}(\mathscr{H}_t) =
-f(N_{j,i}(t))\]</span></p>
+<div id="time-varying-baseline-baseline" class="section level4">
+<h4>2. Time-Varying Baseline (<code>baseline</code>)</h4>
+<p>Captures temporal variation by fitting a piece-wise constant baseline
+across user-specified change points <span class="math inline">\(0 = c_0
+&lt; c_1 &lt; \dots &lt; c_Q\)</span>.</p>
+<p><span class="math display">\[s_{i,j}(\mathscr{H}_t) = \sum_{q=1}^Q
+\mathbb{I}(c_{q-1} \le t &lt; c_q)\]</span></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Piece-wise constant baseline changing at times 10, 25, and 50</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="sc">~</span> <span class="fu">baseline</span>(<span class="at">changepoints =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">25</span>, <span class="dv">50</span>))</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># Baseline with custom labels</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="sc">~</span> <span class="fu">baseline</span>(<span class="at">changepoints =</span> <span class="fu">c</span>(<span class="dv">100</span>, <span class="dv">200</span>), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">&quot;Phase1&quot;</span>, <span class="st">&quot;Phase2&quot;</span>, <span class="st">&quot;Phase3&quot;</span>))</span></code></pre></div>
 </div>
-<div id="duration-duration-current_interaction" class="section level3">
-<h3>4. Duration (<code>duration</code> /
-<code>current_interaction</code>)</h3>
-<p>Measures the dependency on the time since the current interaction
-started (DEM only). <span class="math display">\[s_{i,j}(\mathscr{H}_t)
-= \begin{cases} f(t - t_{\text{start, } i,j}) &amp; \text{if dyad }
-(i,j) \text{ is interacting at } t \\ 0 &amp; \text{otherwise}
-\end{cases}\]</span> where <span class="math inline">\(t_{\text{start, }
-i,j}\)</span> is the timestamp of the last formation event.</p>
+<div id="degree-fixed-effects-degree-degrees" class="section level4">
+<h4>3. Degree Fixed Effects (<code>degree</code> /
+<code>degrees</code>)</h4>
+<p>Adds node-specific sender and receiver baseline parameters (<span class="math inline">\(\alpha_i\)</span> and <span class="math inline">\(\gamma_j\)</span>) estimated efficiently via
+Minorization-Maximization (MM).</p>
+<p><span class="math display">\[\alpha_i + \gamma_j\]</span></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Include sender and receiver degree fixed effects</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="sc">~</span> degree <span class="sc">+</span> <span class="fu">inertia</span>()</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co"># Plural alias</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="sc">~</span> degrees <span class="sc">+</span> <span class="fu">reciprocity</span>()</span></code></pre></div>
+<hr />
 </div>
-<div id="participation-shifts-p-shifts" class="section level3">
-<h3>5. Participation Shifts (P-shifts)</h3>
-<p>P-shifts capture the sequential dependencies between consecutive
-events (REM only). Let the preceding event in the stream be <span class="math inline">\(A \to B\)</span>. For a candidate event <span class="math inline">\(i \to j\)</span> at time <span class="math inline">\(t\)</span>:</p>
-<ul>
-<li><strong><code>psABBA</code></strong> (Reciprocation): <span class="math inline">\(s_{i,j}(t) = \mathbb{I}(i = B, j =
-A)\)</span></li>
-<li><strong><code>psABBY</code></strong> (Receiver turn-continuing):
-<span class="math inline">\(s_{i,j}(t) = \mathbb{I}(i = B, j \ne A, j
-\ne B)\)</span></li>
-<li><strong><code>psABAY</code></strong> (Sender turn-continuing): <span class="math inline">\(s_{i,j}(t) = \mathbb{I}(i = A, j \ne A, j \ne
-B)\)</span></li>
-<li><strong><code>psABXA</code></strong> (Usurpation to sender): <span class="math inline">\(s_{i,j}(t) = \mathbb{I}(i \ne A, i \ne B, j =
-A)\)</span></li>
-<li><strong><code>psABXB</code></strong> (Usurpation to receiver): <span class="math inline">\(s_{i,j}(t) = \mathbb{I}(i \ne A, i \ne B, j =
-B)\)</span></li>
-<li><strong><code>psABXY</code></strong> (Completely new dyad): <span class="math inline">\(s_{i,j}(t) = \mathbb{I}(i \ne A, i \ne B, j \ne A,
-j \ne B)\)</span></li>
-</ul>
+</div>
+<div id="endogenous-dyadic-terms" class="section level2">
+<h2>Endogenous Dyadic Terms</h2>
+<p>Endogenous dyadic terms capture direct past interaction tendencies
+between unit pairs <span class="math inline">\((i,j)\)</span>.</p>
+<div id="inertia-inertia-number_interaction" class="section level4">
+<h4>1. Inertia (<code>inertia</code> /
+<code>number_interaction</code>)</h4>
+<p>Measures the tendency for dyads with past interactions to interact
+again. Let <span class="math inline">\(N_{i,j}(t)\)</span> be the total
+events from <span class="math inline">\(i\)</span> to <span class="math inline">\(j\)</span> before time <span class="math inline">\(t\)</span>, and <span class="math inline">\(N_{i,j}^w(t) = \sum_{k: t-w &lt; t_k &lt; t}
+\mathbb{I}(i_k = i, j_k = j)\)</span> be the count within time window
+<span class="math inline">\(w\)</span>.</p>
+<p><span class="math display">\[s_{i,j}(\mathscr{H}_t) = f(N_{i,j}(t))
+\quad \text{or} \quad f(N_{i,j}^w(t))\]</span></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Cumulative interaction count (identity transformation)</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="sc">~</span> <span class="fu">inertia</span>()</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co"># Log-transformed inertia evaluated over a 30-day window</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="sc">~</span> <span class="fu">inertia</span>(<span class="at">transformation =</span> <span class="st">&quot;log&quot;</span>, <span class="at">window =</span> <span class="dv">30</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co"># Inertia calculated from a secondary event stream</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="sc">~</span> <span class="fu">inertia</span>(<span class="at">event_stream =</span> external_events)</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co"># Function alias</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="sc">~</span> <span class="fu">number_interaction</span>(<span class="at">transformation =</span> <span class="st">&quot;log&quot;</span>)</span></code></pre></div>
+</div>
+<div id="reciprocity-reciprocity" class="section level4">
+<h4>2. Reciprocity (<code>reciprocity</code>)</h4>
+<p>Measures the tendency of <span class="math inline">\(i \to j\)</span>
+interactions to be triggered by past <span class="math inline">\(j \to
+i\)</span> interactions (directed networks only).</p>
+<p><span class="math display">\[s_{i,j}(\mathscr{H}_t) = f(N_{j,i}(t))
+\quad \text{or} \quad f(N_{j,i}^w(t))\]</span></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Cumulative reciprocity</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="sc">~</span> <span class="fu">reciprocity</span>()</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co"># Binary reciprocity indicator over a 14-day window</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="sc">~</span> <span class="fu">reciprocity</span>(<span class="at">transformation =</span> <span class="st">&quot;bin&quot;</span>, <span class="at">window =</span> <span class="dv">14</span>)</span></code></pre></div>
+</div>
+<div id="duration-duration-current_interaction" class="section level4">
+<h4>3. Duration (<code>duration</code> /
+<code>current_interaction</code>)</h4>
+<p>Measures dependency on the time elapsed since the current interaction
+started (DEM dissolution process only).</p>
+<p><span class="math display">\[s_{i,j}(\mathscr{H}_t) = \begin{cases}
+f(t - t_{\text{start}, i,j}) &amp; \text{if dyad } (i,j) \text{ is
+active at } t \\ 0 &amp; \text{otherwise} \end{cases}\]</span></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Elapsed duration (identity transformation)</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="sc">~</span> <span class="fu">duration</span>()</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co"># Log-transformed duration for DEM dissolution formulas</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="sc">~</span> <span class="fu">duration</span>(<span class="at">transformation =</span> <span class="st">&quot;log&quot;</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co"># Alias</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="sc">~</span> <span class="fu">current_interaction</span>(<span class="at">transformation =</span> <span class="st">&quot;log&quot;</span>)</span></code></pre></div>
+</div>
+<div id="participation-shifts-ps-psabba-psabby-psabay-psabxa-psabxb-psabxy" class="section level4">
+<h4>4. Participation Shifts (<code>ps</code> / <code>psABBA</code>,
+<code>psABBY</code>, <code>psABAY</code>, <code>psABXA</code>,
+<code>psABXB</code>, <code>psABXY</code>)</h4>
+<p>Participation shifts capture immediate sequential dependencies
+between consecutive events (REM only). Let the previous event be <span class="math inline">\(A \to B\)</span>. For candidate event <span class="math inline">\(C \to D\)</span> at time <span class="math inline">\(t\)</span>:</p>
+<table>
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Term Function</th>
+<th align="left">Shorthand Mode</th>
+<th align="left">Math Definition</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><code>psABBA()</code></td>
+<td align="left"><code>mode = &quot;ABBA&quot;</code></td>
+<td align="left"><span class="math inline">\(\mathbb{I}(C = B, D =
+A)\)</span></td>
+<td align="left">Direct reciprocation (<span class="math inline">\(B \to
+A\)</span>)</td>
+</tr>
+<tr class="even">
+<td align="left"><code>psABBY()</code></td>
+<td align="left"><code>mode = &quot;ABBY&quot;</code></td>
+<td align="left"><span class="math inline">\(\mathbb{I}(C = B, D \ne A,
+D \ne B)\)</span></td>
+<td align="left">Receiver turn-continuing (<span class="math inline">\(B
+\to Y\)</span>)</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>psABAY()</code></td>
+<td align="left"><code>mode = &quot;ABAY&quot;</code></td>
+<td align="left"><span class="math inline">\(\mathbb{I}(C = A, D \ne A,
+D \ne B)\)</span></td>
+<td align="left">Sender turn-continuing (<span class="math inline">\(A
+\to Y\)</span>)</td>
+</tr>
+<tr class="even">
+<td align="left"><code>psABXA()</code></td>
+<td align="left"><code>mode = &quot;ABXA&quot;</code></td>
+<td align="left"><span class="math inline">\(\mathbb{I}(C \ne A, C \ne
+B, D = A)\)</span></td>
+<td align="left">Usurpation to sender (<span class="math inline">\(X \to
+A\)</span>)</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>psABXB()</code></td>
+<td align="left"><code>mode = &quot;ABXB&quot;</code></td>
+<td align="left"><span class="math inline">\(\mathbb{I}(C \ne A, C \ne
+B, D = B)\)</span></td>
+<td align="left">Usurpation to receiver (<span class="math inline">\(X
+\to B\)</span>)</td>
+</tr>
+<tr class="even">
+<td align="left"><code>psABXY()</code></td>
+<td align="left"><code>mode = &quot;ABXY&quot;</code></td>
+<td align="left"><span class="math inline">\(\mathbb{I}(C \ne A, C \ne
+B, D \ne A, D \ne B)\)</span></td>
+<td align="left">Completely new dyad (<span class="math inline">\(X \to
+Y\)</span>)</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># Individual participation shift functions</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="sc">~</span> <span class="fu">psABBA</span>() <span class="sc">+</span> <span class="fu">psABBY</span>() <span class="sc">+</span> <span class="fu">psABAY</span>()</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co"># Shorthand dispatcher ps()</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="sc">~</span> <span class="fu">ps</span>(<span class="at">mode =</span> <span class="st">&quot;ABBA&quot;</span>) <span class="sc">+</span> <span class="fu">ps</span>(<span class="at">mode =</span> <span class="st">&quot;ABAY&quot;</span>)</span></code></pre></div>
 <hr />
 </div>
 </div>
 <div id="triadic-closure-and-shared-partners" class="section level2">
 <h2>Triadic Closure and Shared Partners</h2>
-<p>Triadic statistics capture structural closure. They can be calculated
-over active edges (designated as <strong><code>current_</code></strong>
-in DEM) or historical event existence (designated as
-<strong><code>general_</code></strong> in REM/DEM). Let <span class="math inline">\(\mathcal{A}_t\)</span> represent the set of
-interacting dyads (for <code>current_</code>) or previously interacted
-dyads (for <code>general_</code>) at time <span class="math inline">\(t\)</span>.</p>
-<div id="common-partners-general_common_partners-current_common_partners" class="section level3">
-<h3>Common Partners (<code>general_common_partners</code> /
-<code>current_common_partners</code>)</h3>
-<p>Counts the number of third-party actors <span class="math inline">\(k\)</span> sharing a connection of a specified
-type with both <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span>:</p>
+<p>Triadic terms capture structural closure via shared third-party nodes
+<span class="math inline">\(k\)</span>. Statistics can be based on
+historical event existence (<code>general_</code>, REM/DEM) or currently
+active edges (<code>current_</code>, DEM only).</p>
+<div id="common-partners-general_common_partners-current_common_partners-common_partner" class="section level4">
+<h4>1. Common Partners (<code>general_common_partners</code> /
+<code>current_common_partners</code> / <code>common_partner</code>)</h4>
+<p>Counts the number of third-party actors <span class="math inline">\(k\)</span> sharing directed paths of a specified
+type with <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span>:</p>
 <ul>
-<li><strong><code>OSP</code></strong> (Outgoing Shared Partner): <span class="math inline">\(s_{i,j}(t) = f(|\{k : (i,k) \in \mathcal{A}_t
-\land (j,k) \in \mathcal{A}_t\}|)\)</span></li>
-<li><strong><code>ISP</code></strong> (Incoming Shared Partner): <span class="math inline">\(s_{i,j}(t) = f(|\{k : (k,i) \in \mathcal{A}_t
-\land (k,j) \in \mathcal{A}_t\}|)\)</span></li>
-<li><strong><code>OTP</code></strong> (Outgoing Two-Path): <span class="math inline">\(s_{i,j}(t) = f(|\{k : (i,k) \in \mathcal{A}_t
-\land (k,j) \in \mathcal{A}_t\}|)\)</span></li>
-<li><strong><code>ITP</code></strong> (Incoming Two-Path): <span class="math inline">\(s_{i,j}(t) = f(|\{k : (k,i) \in \mathcal{A}_t
-\land (j,k) \in \mathcal{A}_t\}|)\)</span></li>
+<li><strong>Outgoing Shared Partners (<code>OSP</code>)</strong>: Both
+<span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> interact with <span class="math inline">\(k\)</span> (<span class="math inline">\(i \to
+k\)</span> and <span class="math inline">\(j \to k\)</span>). <span class="math display">\[s_{i,j}(t) = f\left(\left|\{k : N_{i,k}(t)&gt;0
+\land N_{j,k}(t)&gt;0\}\right|\right)\]</span></li>
+<li><strong>Incoming Shared Partners (<code>ISP</code>)</strong>: Both
+<span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> receive interactions from <span class="math inline">\(k\)</span> (<span class="math inline">\(k \to
+i\)</span> and <span class="math inline">\(k \to j\)</span>). <span class="math display">\[s_{i,j}(t) = f\left(\left|\{k : N_{k,i}(t)&gt;0
+\land N_{k,j}(t)&gt;0\}\right|\right)\]</span></li>
+<li><strong>Outgoing Two-Path (<code>OTP</code>)</strong>: Path from
+<span class="math inline">\(i\)</span> through <span class="math inline">\(k\)</span> to <span class="math inline">\(j\)</span> (<span class="math inline">\(i \to
+k\)</span> and <span class="math inline">\(k \to j\)</span>). <span class="math display">\[s_{i,j}(t) = f\left(\left|\{k : N_{i,k}(t)&gt;0
+\land N_{k,j}(t)&gt;0\}\right|\right)\]</span></li>
+<li><strong>Incoming Two-Path (<code>ITP</code>)</strong>: Path from
+<span class="math inline">\(j\)</span> through <span class="math inline">\(k\)</span> to <span class="math inline">\(i\)</span> (<span class="math inline">\(k \to
+i\)</span> and <span class="math inline">\(j \to k\)</span>). <span class="math display">\[s_{i,j}(t) = f\left(\left|\{k : N_{k,i}(t)&gt;0
+\land N_{j,k}(t)&gt;0\}\right|\right)\]</span></li>
 </ul>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="co"># Full term names</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="sc">~</span> <span class="fu">general_common_partners</span>(<span class="at">type =</span> <span class="st">&quot;OTP&quot;</span>, <span class="at">transformation =</span> <span class="st">&quot;log&quot;</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="sc">~</span> <span class="fu">current_common_partners</span>(<span class="at">type =</span> <span class="st">&quot;OSP&quot;</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co"># Convenience term aliases</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="sc">~</span> <span class="fu">general_common_partner_OSP</span>()</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="sc">~</span> <span class="fu">current_common_partner_ISP</span>()</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co"># Dispatcher helper common_partner()</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="sc">~</span> <span class="fu">common_partner</span>(<span class="at">history =</span> <span class="st">&quot;general&quot;</span>, <span class="at">type =</span> <span class="st">&quot;OTP&quot;</span>, <span class="at">transformation =</span> <span class="st">&quot;log&quot;</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="sc">~</span> <span class="fu">common_partner</span>(<span class="at">history =</span> <span class="st">&quot;current&quot;</span>, <span class="at">type =</span> <span class="st">&quot;OSP&quot;</span>)</span></code></pre></div>
 </div>
-<div id="triangles-general_triangle-current_triangle" class="section level3">
-<h3>Triangles (<code>general_triangle</code> /
-<code>current_triangle</code>)</h3>
-<p>Similar to common partners, but only non-zero if the focal dyad
-itself is active (directed only):</p>
-<ul>
-<li><strong><code>OSP</code></strong> Triangle: <span class="math inline">\(s_{i,j}(t) = \mathbb{I}((i,j) \in \mathcal{A}_t)
-\times f(|\{k : (i,k) \in \mathcal{A}_t \land (j,k) \in
-\mathcal{A}_t\}|)\)</span></li>
-<li><strong><code>ISP</code></strong> Triangle: <span class="math inline">\(s_{i,j}(t) = \mathbb{I}((i,j) \in \mathcal{A}_t)
-\times f(|\{k : (k,i) \in \mathcal{A}_t \land (k,j) \in
-\mathcal{A}_t\}|)\)</span></li>
-<li><strong><code>OTP</code></strong> Triangle: <span class="math inline">\(s_{i,j}(t) = \mathbb{I}((i,j) \in \mathcal{A}_t)
-\times f(|\{k : (i,k) \in \mathcal{A}_t \land (k,j) \in
-\mathcal{A}_t\}|)\)</span></li>
-<li><strong><code>ITP</code></strong> Triangle: <span class="math inline">\(s_{i,j}(t) = \mathbb{I}((i,j) \in \mathcal{A}_t)
-\times f(|\{k : (k,i) \in \mathcal{A}_t \land (j,k) \in
-\mathcal{A}_t\}|)\)</span></li>
-</ul>
+<div id="triangles-general_triangle-current_triangle-triangle" class="section level4">
+<h4>2. Triangles (<code>general_triangle</code> /
+<code>current_triangle</code> / <code>triangle</code>)</h4>
+<p>Similar to common partners, but conditional on the focal dyad <span class="math inline">\((i,j)\)</span> having an active or historical edge
+(directed networks only):</p>
+<p><span class="math display">\[s_{i,j}(t) = \mathbb{I}((i,j) \in
+\mathcal{A}_t) \times
+f\left(|CP_{i,j}^{\text{type}}(t)|\right)\]</span></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># Historical OTP triangle (log transformed)</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="sc">~</span> <span class="fu">general_triangle</span>(<span class="at">type =</span> <span class="st">&quot;OTP&quot;</span>, <span class="at">transformation =</span> <span class="st">&quot;log&quot;</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co"># Active OSP triangle in DEM</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="sc">~</span> <span class="fu">current_triangle</span>(<span class="at">type =</span> <span class="st">&quot;OSP&quot;</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="co"># Dispatcher helper triangle()</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="sc">~</span> <span class="fu">triangle</span>(<span class="at">history =</span> <span class="st">&quot;general&quot;</span>, <span class="at">type =</span> <span class="st">&quot;OTP&quot;</span>)</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="sc">~</span> <span class="fu">triangle</span>(<span class="at">history =</span> <span class="st">&quot;current&quot;</span>, <span class="at">type =</span> <span class="st">&quot;OSP&quot;</span>)</span></code></pre></div>
 <hr />
 </div>
 </div>
 <div id="degree-and-centrality-statistics" class="section level2">
 <h2>Degree and Centrality Statistics</h2>
-<p>These statistics capture actor-level activity or popularity. Let
-<span class="math inline">\(\mathcal{D}_t\)</span> be the network state
-at time <span class="math inline">\(t\)</span>, and <span class="math inline">\(d_{i, \text{out}}(t)\)</span>, <span class="math inline">\(d_{i, \text{in}}(t)\)</span> represent the
-out-degree and in-degree of <span class="math inline">\(i\)</span> in
-<span class="math inline">\(\mathcal{D}_t\)</span>. Let <span class="math inline">\(c_{i, \text{out}}(t)\)</span>, <span class="math inline">\(c_{i, \text{in}}(t)\)</span> be the total
-out-events and in-events involving <span class="math inline">\(i\)</span>.</p>
-<div id="degree-statistics-general_degree_out_sender-etc." class="section level3">
-<h3>Degree Statistics (<code>general_degree_out_sender</code>,
-etc.)</h3>
+<p>Degree and event-count statistics capture actor activity and
+popularity. Let <span class="math inline">\(d_{i,\text{out}}(t)\)</span>
+and <span class="math inline">\(d_{i,\text{in}}(t)\)</span> be node
+<span class="math inline">\(i\)</span>’s out- and in-degrees at time
+<span class="math inline">\(t\)</span>, and <span class="math inline">\(c_{i,\text{out}}(t)\)</span>, <span class="math inline">\(c_{i,\text{in}}(t)\)</span> be node <span class="math inline">\(i\)</span>’s total sent and received event
+counts.</p>
+<div id="binary-degree-statistics-general_degree_-current_degree_-degree" class="section level4">
+<h4>1. Binary Degree Statistics (<code>general_degree_*</code>,
+<code>current_degree_*</code>, <code>degree</code>)</h4>
+<p>Captures structural centrality based on unique interaction partners
+(binary degree).</p>
 <ul>
-<li><strong>Out-Degree Sender</strong>: <span class="math inline">\(s_{i,j}(t) = f(d_{i, \text{out}}(t))\)</span></li>
-<li><strong>Out-Degree Receiver</strong>: <span class="math inline">\(s_{i,j}(t) = f(d_{j, \text{out}}(t))\)</span></li>
-<li><strong>In-Degree Sender</strong>: <span class="math inline">\(s_{i,j}(t) = f(d_{i, \text{in}}(t))\)</span></li>
-<li><strong>In-Degree Receiver</strong>: <span class="math inline">\(s_{i,j}(t) = f(d_{j, \text{in}}(t))\)</span></li>
-<li><strong>Degree Sum</strong> (undirected only): <span class="math inline">\(s_{i,j}(t) = f(d_{i}(t) + d_{j}(t))\)</span></li>
-<li><strong>Degree Absolute Difference</strong> (undirected only): <span class="math inline">\(s_{i,j}(t) = f(\|d_{i}(t) -
-d_{j}(t)\|)\)</span></li>
+<li><strong>Sender Out-Degree</strong>: <span class="math inline">\(s_{i,j}(t) = f(d_{i,\text{out}}(t))\)</span></li>
+<li><strong>Receiver Out-Degree</strong>: <span class="math inline">\(s_{i,j}(t) = f(d_{j,\text{out}}(t))\)</span></li>
+<li><strong>Sender In-Degree</strong>: <span class="math inline">\(s_{i,j}(t) = f(d_{i,\text{in}}(t))\)</span></li>
+<li><strong>Receiver In-Degree</strong>: <span class="math inline">\(s_{i,j}(t) = f(d_{j,\text{in}}(t))\)</span></li>
+<li><strong>Degree Sum</strong> (undirected networks): <span class="math inline">\(s_{i,j}(t) = f(d_{i}(t) + d_{j}(t))\)</span></li>
+<li><strong>Degree Absolute Difference</strong> (undirected networks):
+<span class="math inline">\(s_{i,j}(t) = f(|d_{i}(t) -
+d_{j}(t)|)\)</span></li>
 </ul>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># Specific historical degree functions</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="sc">~</span> <span class="fu">general_degree_out_sender</span>() <span class="sc">+</span> <span class="fu">general_degree_in_receiver</span>()</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co"># Specific active degree functions (DEM only)</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="sc">~</span> <span class="fu">current_degree_sum</span>(<span class="at">transformation =</span> <span class="st">&quot;log&quot;</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="co"># Flexible degree() dispatcher helper</span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="sc">~</span> <span class="fu">degree</span>(<span class="at">type =</span> <span class="st">&quot;out_sender&quot;</span>, <span class="at">history =</span> <span class="st">&quot;general&quot;</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="sc">~</span> <span class="fu">degree</span>(<span class="at">type =</span> <span class="st">&quot;in_receiver&quot;</span>, <span class="at">history =</span> <span class="st">&quot;current&quot;</span>)</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="sc">~</span> <span class="fu">degree</span>(<span class="at">type =</span> <span class="st">&quot;sum&quot;</span>, <span class="at">history =</span> <span class="st">&quot;general&quot;</span>, <span class="at">transformation =</span> <span class="st">&quot;log&quot;</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="sc">~</span> <span class="fu">degree</span>(<span class="at">type =</span> <span class="st">&quot;absdiff&quot;</span>, <span class="at">history =</span> <span class="st">&quot;general&quot;</span>)</span></code></pre></div>
 </div>
-<div id="count-statistics-general_count_out_sender-etc." class="section level3">
-<h3>Count Statistics (<code>general_count_out_sender</code>, etc.)</h3>
-<p>Count statistics are identical to degree statistics but use total
-interaction counts (<span class="math inline">\(c\)</span>) rather than
-binary degrees (<span class="math inline">\(d\)</span>):</p>
+<div id="weighted-event-count-statistics-general_count_-current_count_-count" class="section level4">
+<h4>2. Weighted Event Count Statistics (<code>general_count_*</code>,
+<code>current_count_*</code>, <code>count</code>)</h4>
+<p>Identical to degree statistics, but computed using total interaction
+event counts (<span class="math inline">\(c\)</span>) rather than binary
+degrees (<span class="math inline">\(d\)</span>).</p>
 <ul>
-<li><strong>Out-Count Sender</strong>: <span class="math inline">\(s_{i,j}(t) = f(c_{i, \text{out}}(t))\)</span></li>
-<li><strong>Out-Count Receiver</strong>: <span class="math inline">\(s_{i,j}(t) = f(c_{j, \text{out}}(t))\)</span></li>
-<li><strong>In-Count Sender</strong>: <span class="math inline">\(s_{i,j}(t) = f(c_{i, \text{in}}(t))\)</span></li>
-<li><strong>In-Count Receiver</strong>: <span class="math inline">\(s_{i,j}(t) = f(c_{j, \text{in}}(t))\)</span></li>
-<li><strong>Count Sum</strong> (undirected only): <span class="math inline">\(s_{i,j}(t) = f(c_{i}(t) + c_{j}(t))\)</span></li>
-<li><strong>Count Absolute Difference</strong> (undirected only): <span class="math inline">\(s_{i,j}(t) = f(\|c_{i}(t) -
-c_{j}(t)\|)\)</span></li>
+<li><strong>Sender Out-Count</strong>: <span class="math inline">\(s_{i,j}(t) = f(c_{i,\text{out}}(t))\)</span></li>
+<li><strong>Receiver In-Count</strong>: <span class="math inline">\(s_{i,j}(t) = f(c_{j,\text{in}}(t))\)</span></li>
+<li><strong>Count Sum</strong> (undirected networks): <span class="math inline">\(s_{i,j}(t) = f(c_{i}(t) + c_{j}(t))\)</span></li>
+<li><strong>Count Absolute Difference</strong> (undirected networks):
+<span class="math inline">\(s_{i,j}(t) = f(|c_{i}(t) -
+c_{j}(t)|)\)</span></li>
 </ul>
-<p>All of these degree and count statistics can be conveniently
-specified in model formulas using the <code>degree()</code> (or
-<code>degrees()</code>) and <code>count()</code> helper functions:</p>
-<ul>
-<li><strong>Out-Degree / Out-Count Sender</strong>:
-<code>degree(type = &quot;out_sender&quot;)</code> or
-<code>count(type = &quot;out_sender&quot;)</code></li>
-<li><strong>Out-Degree / Out-Count Receiver</strong>:
-<code>degree(type = &quot;out_receiver&quot;)</code> or
-<code>count(type = &quot;out_receiver&quot;)</code></li>
-<li><strong>In-Degree / In-Count Sender</strong>:
-<code>degree(type = &quot;in_sender&quot;)</code> or
-<code>count(type = &quot;in_sender&quot;)</code></li>
-<li><strong>In-Degree / In-Count Receiver</strong>:
-<code>degree(type = &quot;in_receiver&quot;)</code> or
-<code>count(type = &quot;in_receiver&quot;)</code></li>
-<li><strong>Degree / Count Sum</strong>:
-<code>degree(type = &quot;sum&quot;)</code> or
-<code>count(type = &quot;sum&quot;)</code></li>
-<li><strong>Degree / Count Absolute Difference</strong>:
-<code>degree(type = &quot;absdiff&quot;)</code> or
-<code>count(type = &quot;absdiff&quot;)</code></li>
-</ul>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># Specific historical count functions</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="sc">~</span> <span class="fu">general_count_out_sender</span>(<span class="at">transformation =</span> <span class="st">&quot;log&quot;</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co"># Specific active count functions (DEM only)</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="sc">~</span> <span class="fu">current_count_sum</span>()</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="co"># Flexible count() dispatcher helper</span></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="sc">~</span> <span class="fu">count</span>(<span class="at">type =</span> <span class="st">&quot;out_sender&quot;</span>, <span class="at">history =</span> <span class="st">&quot;general&quot;</span>, <span class="at">transformation =</span> <span class="st">&quot;log&quot;</span>)</span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co"># degree() dispatcher with count = TRUE</span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="sc">~</span> <span class="fu">degree</span>(<span class="at">type =</span> <span class="st">&quot;out_sender&quot;</span>, <span class="at">history =</span> <span class="st">&quot;general&quot;</span>, <span class="at">count =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 <hr />
 </div>
 </div>
 <div id="exogenous-statistics" class="section level2">
 <h2>Exogenous Statistics</h2>
-<div id="dyadic-covariate-dyadic_cov" class="section level3">
-<h3>1. Dyadic Covariate (<code>dyadic_cov</code>)</h3>
+<p>Exogenous statistics incorporate external nodal or dyadic covariates
+into model formulas.</p>
+<div id="dyadic-covariate-dyadic_cov" class="section level4">
+<h4>1. Dyadic Covariate (<code>dyadic_cov</code>)</h4>
+<p>Incorporates an external <span class="math inline">\(N \times
+N\)</span> dyadic covariate matrix <span class="math inline">\(X(t)\)</span> (constant or time-varying).</p>
 <p><span class="math display">\[s_{i,j}(\mathscr{H}_t) =
-f(X_{i,j}(t))\]</span> where <span class="math inline">\(X(t)\)</span>
-is an <span class="math inline">\(N \times N\)</span> matrix.</p>
+f(X_{i,j}(t))\]</span></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># Constant dyadic matrix (e.g., geographic distance)</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="sc">~</span> <span class="fu">dyadic_cov</span>(<span class="at">data =</span> dist_matrix)</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co"># Time-varying dyadic matrix list across change points</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>cov_list <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="st">&quot;0&quot;</span> <span class="ot">=</span> matrix1, <span class="st">&quot;50&quot;</span> <span class="ot">=</span> matrix2)</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a><span class="sc">~</span> <span class="fu">dyadic_cov</span>(<span class="at">data =</span> cov_list, <span class="at">change_points =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">50</span>))</span></code></pre></div>
 </div>
-<div id="monadic-covariate-monadic_cov" class="section level3">
-<h3>2. Monadic Covariate (<code>monadic_cov</code>)</h3>
+<div id="monadic-covariate-monadic_cov" class="section level4">
+<h4>2. Monadic Covariate (<code>monadic_cov</code>)</h4>
+<p>Transforms external node-level attributes <span class="math inline">\(x(t)\)</span> into a dyadic matrix using a
+user-specified function <span class="math inline">\(g(x_i,
+x_j)\)</span>.</p>
 <p><span class="math display">\[s_{i,j}(\mathscr{H}_t) = g(x_i(t),
-x_j(t))\]</span> where <span class="math inline">\(x\)</span> is a
-monadic vector and <span class="math inline">\(g(\cdot)\)</span> is a
-user-defined function.</p>
+x_j(t))\]</span></p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="co"># Absolute difference in age (homophily)</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="sc">~</span> <span class="fu">monadic_cov</span>(<span class="at">data =</span> age_vector, <span class="at">fun =</span> <span class="cf">function</span>(u, v) <span class="fu">abs</span>(u <span class="sc">-</span> v))</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="co"># Sender main effect (sender attribute value)</span></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="sc">~</span> <span class="fu">monadic_cov</span>(<span class="at">data =</span> status_vector, <span class="at">fun =</span> <span class="cf">function</span>(u, v) u)</span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a><span class="co"># Receiver main effect (receiver attribute value)</span></span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a><span class="sc">~</span> <span class="fu">monadic_cov</span>(<span class="at">data =</span> status_vector, <span class="at">fun =</span> <span class="cf">function</span>(u, v) v)</span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a><span class="co"># Product interaction</span></span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a><span class="sc">~</span> <span class="fu">monadic_cov</span>(<span class="at">data =</span> status_vector, <span class="at">fun =</span> <span class="cf">function</span>(u, v) u <span class="sc">*</span> v)</span></code></pre></div>
 <hr />
 </div>
 </div>
-<div id="developer-guide-adding-custom-sufficient-statistics" class="section level2">
-<h2>Developer Guide: Adding Custom Sufficient Statistics</h2>
-<p>To add a new sufficient statistic (e.g., <code>my_stat</code>) to the
-package, follow this two-step process:</p>
-<div id="step-1-implement-the-update-logic-in-c" class="section level3">
-<h3>Step 1: Implement the Update Logic in C++</h3>
-<p>Define a C++ function in the <code>src/</code> directory (e.g., in a
-new file or in <code>src/sufficient_statistics.cpp</code>) with the
-signature <code>ValidateFunction</code>. This function computes the
-change to the statistic state matrix when an event occurs:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="pp">#include </span><span class="im">&quot;redeem/sufficient_statistics.h&quot;</span></span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="pp">#include </span><span class="im">&quot;redeem/extension_api.hpp&quot;</span></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>arma<span class="op">::</span>uvec stat_my_stat<span class="op">(</span></span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>    Data_DEM <span class="op">&amp;</span>object<span class="op">,</span> </span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>    arma<span class="op">::</span>mat <span class="op">&amp;</span>data<span class="op">,</span> </span>
-<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">int</span> <span class="op">&amp;</span>from<span class="op">,</span> </span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">int</span> <span class="op">&amp;</span>to<span class="op">,</span> </span>
-<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">int</span> <span class="op">&amp;</span>number_event<span class="op">,</span> </span>
-<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">int</span> col_number<span class="op">,</span> </span>
-<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>    <span class="bu">std::</span>string transformation<span class="op">,</span> </span>
-<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">int</span> type</span>
-<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>  <span class="cf">if</span> <span class="op">(</span>from <span class="op">==</span> <span class="dv">0</span> <span class="op">||</span> to <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="cf">return</span> arma<span class="op">::</span>uvec<span class="op">();</span></span>
-<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>  </span>
-<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a>  <span class="co">// 1. Calculate which dyad indices are affected and the change value (val)</span></span>
-<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a>  <span class="dt">double</span> val <span class="op">=</span> <span class="op">(</span>type <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="op">?</span> <span class="fl">1.0</span> <span class="op">:</span> <span class="op">-</span><span class="fl">1.0</span><span class="op">;</span> </span>
-<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a>  arma<span class="op">::</span>uvec affected_indices <span class="op">=</span> <span class="op">{</span> object<span class="op">.</span>current_stats<span class="op">.</span>find_from_to<span class="op">(</span>from<span class="op">,</span> to<span class="op">)</span> <span class="op">};</span></span>
-<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a>  </span>
-<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a>  <span class="co">// 2. Apply the update using the helper (handles transformations internally)</span></span>
-<span id="cb1-21"><a href="#cb1-21" tabindex="-1"></a>  apply_update<span class="op">(</span>object<span class="op">,</span> affected_indices<span class="op">,</span> col_number<span class="op">,</span> val<span class="op">,</span> transformation<span class="op">,</span> data<span class="op">);</span></span>
-<span id="cb1-22"><a href="#cb1-22" tabindex="-1"></a>  </span>
-<span id="cb1-23"><a href="#cb1-23" tabindex="-1"></a>  <span class="co">// 3. Return the indices of modified dyads</span></span>
-<span id="cb1-24"><a href="#cb1-24" tabindex="-1"></a>  <span class="cf">return</span> affected_indices<span class="op">;</span></span>
-<span id="cb1-25"><a href="#cb1-25" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb1-26"><a href="#cb1-26" tabindex="-1"></a></span>
-<span id="cb1-27"><a href="#cb1-27" tabindex="-1"></a><span class="co">// 4. Register the term in the global C++ Registry</span></span>
-<span id="cb1-28"><a href="#cb1-28" tabindex="-1"></a>TERM_REGISTER<span class="op">(</span><span class="st">&quot;my_stat&quot;</span><span class="op">,</span> stat_my_stat<span class="op">);</span></span></code></pre></div>
-</div>
-<div id="step-2-write-the-r-initializer-function" class="section level3">
-<h3>Step 2: Write the R Initializer Function</h3>
-<p>In <code>R/init_terms.R</code>, create an initialization function
-named <code>InitRedeemTerm.my_stat</code>. This function validates
-user-provided arguments and sets up initial values:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co">#&#39; @keywords internal</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>InitRedeemTerm.my_stat <span class="ot">&lt;-</span> <span class="cf">function</span>(arglist, n_nodes, model_type, directed, ...) {</span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="co"># Validate arguments against expected types and models</span></span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  arglist <span class="ot">&lt;-</span> <span class="fu">check.RedeemTerm</span>(arglist,</span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>    <span class="at">model_type =</span> model_type, <span class="at">directed =</span> directed,</span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>    <span class="at">expected =</span> <span class="fu">list</span>(<span class="at">transformation =</span> <span class="fu">c</span>(<span class="st">&quot;identity&quot;</span>, <span class="st">&quot;log&quot;</span>, <span class="st">&quot;recip&quot;</span>, <span class="st">&quot;bin&quot;</span>, <span class="st">&quot;sig&quot;</span>), <span class="at">K =</span> <span class="st">&quot;numeric&quot;</span>),</span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>    <span class="at">defaults =</span> <span class="fu">list</span>(<span class="at">transformation =</span> <span class="st">&quot;identity&quot;</span>, <span class="at">K =</span> <span class="dv">1</span>)</span>
-<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  )</span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>  </span>
-<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  <span class="co"># Define initial statistic values at time 0 (optional)</span></span>
-<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  eval_at_zero <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, n_nodes, n_nodes)</span>
-<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>  </span>
-<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  <span class="co"># Return the configuration list</span></span>
-<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>  <span class="fu">list</span>(</span>
-<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>    <span class="at">base_name =</span> <span class="st">&quot;my_stat&quot;</span>,</span>
-<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a>    <span class="at">transformation =</span> arglist<span class="sc">$</span>transformation,</span>
-<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a>    <span class="at">eval_at_zero =</span> eval_at_zero,</span>
-<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a>    <span class="at">event_stream =</span> arglist<span class="sc">$</span>event_stream</span>
-<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a>  )</span>
-<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a>}</span></code></pre></div>
-<p>Once these steps are completed, run <code>devtools::document()</code>
-to update namespaces and documentation, and build the package. The new
-term is now ready for use in <code>dem()</code> and <code>rem()</code>
-by specifying it directly in the formula (e.g.,
-<code>~ my_stat(transformation = &quot;log&quot;)</code>).</p>
-</div>
+<div id="complete-model-formula-examples" class="section level2">
+<h2>Complete Model Formula Examples</h2>
+<p>Below are comprehensive examples of how these terms are combined
+inside full formula objects passed to <code>rem()</code> and
+<code>dem()</code>.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">library</span>(redeem)</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="co"># Example 1: Relational Event Model (REM) Formula</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>rem_formula <span class="ot">&lt;-</span> <span class="er">~</span> <span class="fu">intercept</span>() <span class="sc">+</span></span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>  <span class="fu">inertia</span>(<span class="at">transformation =</span> <span class="st">&quot;log&quot;</span>) <span class="sc">+</span></span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a>  <span class="fu">reciprocity</span>(<span class="at">transformation =</span> <span class="st">&quot;bin&quot;</span>) <span class="sc">+</span></span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>  <span class="fu">ps</span>(<span class="at">mode =</span> <span class="st">&quot;ABBA&quot;</span>) <span class="sc">+</span></span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>  <span class="fu">degree</span>(<span class="at">type =</span> <span class="st">&quot;out_sender&quot;</span>, <span class="at">history =</span> <span class="st">&quot;general&quot;</span>) <span class="sc">+</span></span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a>  <span class="fu">common_partner</span>(<span class="at">type =</span> <span class="st">&quot;OSP&quot;</span>, <span class="at">history =</span> <span class="st">&quot;general&quot;</span>) <span class="sc">+</span></span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a>  <span class="fu">monadic_cov</span>(<span class="at">data =</span> age_vec, <span class="at">fun =</span> <span class="cf">function</span>(u, v) <span class="fu">abs</span>(u <span class="sc">-</span> v))</span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a></span>
+<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a><span class="co"># Fit REM model</span></span>
+<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a><span class="co"># fit_rem &lt;- rem(formula = rem_formula, data = event_data)</span></span>
+<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a><span class="co"># Example 2: Durational Event Model (DEM) Formulas</span></span>
+<span id="cb15-19"><a href="#cb15-19" tabindex="-1"></a><span class="co"># ==============================================================================</span></span>
+<span id="cb15-20"><a href="#cb15-20" tabindex="-1"></a><span class="co"># Incidence process formula (rate of starting an interaction)</span></span>
+<span id="cb15-21"><a href="#cb15-21" tabindex="-1"></a>incidence_formula <span class="ot">&lt;-</span> <span class="er">~</span> <span class="fu">intercept</span>() <span class="sc">+</span></span>
+<span id="cb15-22"><a href="#cb15-22" tabindex="-1"></a>  <span class="fu">inertia</span>(<span class="at">transformation =</span> <span class="st">&quot;log&quot;</span>) <span class="sc">+</span></span>
+<span id="cb15-23"><a href="#cb15-23" tabindex="-1"></a>  <span class="fu">reciprocity</span>() <span class="sc">+</span></span>
+<span id="cb15-24"><a href="#cb15-24" tabindex="-1"></a>  <span class="fu">current_common_partner_OSP</span>() <span class="sc">+</span></span>
+<span id="cb15-25"><a href="#cb15-25" tabindex="-1"></a>  <span class="fu">general_degree_out_sender</span>()</span>
+<span id="cb15-26"><a href="#cb15-26" tabindex="-1"></a></span>
+<span id="cb15-27"><a href="#cb15-27" tabindex="-1"></a><span class="co"># Dissolution process formula (rate of ending an interaction)</span></span>
+<span id="cb15-28"><a href="#cb15-28" tabindex="-1"></a>dissolution_formula <span class="ot">&lt;-</span> <span class="er">~</span> <span class="fu">duration</span>(<span class="at">transformation =</span> <span class="st">&quot;log&quot;</span>) <span class="sc">+</span></span>
+<span id="cb15-29"><a href="#cb15-29" tabindex="-1"></a>  <span class="fu">reciprocity</span>() <span class="sc">+</span></span>
+<span id="cb15-30"><a href="#cb15-30" tabindex="-1"></a>  <span class="fu">dyadic_cov</span>(<span class="at">data =</span> dist_matrix)</span>
+<span id="cb15-31"><a href="#cb15-31" tabindex="-1"></a></span>
+<span id="cb15-32"><a href="#cb15-32" tabindex="-1"></a><span class="co"># Fit DEM model</span></span>
+<span id="cb15-33"><a href="#cb15-33" tabindex="-1"></a><span class="co"># fit_dem &lt;- dem(</span></span>
+<span id="cb15-34"><a href="#cb15-34" tabindex="-1"></a><span class="co">#   formula_incidence = incidence_formula,</span></span>
+<span id="cb15-35"><a href="#cb15-35" tabindex="-1"></a><span class="co">#   formula_duration = dissolution_formula,</span></span>
+<span id="cb15-36"><a href="#cb15-36" tabindex="-1"></a><span class="co">#   data = event_data</span></span>
+<span id="cb15-37"><a href="#cb15-37" tabindex="-1"></a><span class="co"># )</span></span></code></pre></div>
 </div>
 
 
