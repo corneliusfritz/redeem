@@ -1,8 +1,11 @@
 ---
-title: "Mathematical Definitions of Sufficient Statistics"
-output: rmarkdown::html_vignette
+title: "Mathematical Definitions and Formula Specifications of Sufficient Statistics"
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{Mathematical Definitions of Sufficient Statistics}
+  %\VignetteIndexEntry{Mathematical Definitions and Formula Specifications of Sufficient Statistics}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,163 +19,287 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-The **redeem** package models the intensities of interaction formation and
-dissolution using a log-linear formulation. The intensity (rate) for a dyad
-$(i,j)$ at time $t$ is:
+The **redeem** package provides a flexible, log-linear framework for modeling interaction event sequences in relational networks. Models are fitted using `rem()` for **Relational Event Models (REM)** and `dem()` for **Durational Event Models (DEM)**.
 
-$$\lambda_{i,j}(t) = \exp(s_{i,j}(\mathscr{H}_t)^\top \beta + \alpha_i + \alpha_j + f(t, \gamma))$$
+In both model classes, event intensities are specified on the right-hand side of R formulas passed to `rem()` or `dem()` via structural statistics $s_{i,j}(\mathscr{H}_t)$ calculated from event history $\mathscr{H}_t$:
+
+$$\lambda_{i,j}(t) = \exp\left(s_{i,j}(\mathscr{H}_t)^\top \beta + \alpha_i + \alpha_j + f(t, \gamma)\right)$$
 
 where:
 
-- $s_{i,j}(\mathscr{H}_t)$ is a vector of **sufficient statistics** derived from the
-  history of interactions $\mathscr{H}_t$ up to time $t$.
-- $\alpha_i, \alpha_j$ are actor popularity parameters.
-- $f(t, \gamma) = \sum_{q=1}^Q \gamma_q \mathbb{I}(c_{q-1} \le t < c_q)$ is the baseline
-  step-function representing temporal variation over change points
-  $0 = c_0 < c_1 < \dots < c_Q$ (with $\gamma_1 = 0$).
+- $s_{i,j}(\mathscr{H}_t)$ is a vector of **sufficient statistics** derived from history $\mathscr{H}_t$ up to time $t$.
+- $\alpha_i, \alpha_j$ are actor popularity / activity fixed effects (specified via `degree` or `degrees`).
+- $f(t, \gamma) = \sum_{q=1}^Q \gamma_q \mathbb{I}(c_{q-1} \le t < c_q)$ is a baseline step-function over change points $0 = c_0 < c_1 < \dots < c_Q$ (specified via `baseline()`).
 
-This vignette provides precise mathematical definitions for all sufficient
-network statistics implemented in the package, as well as a guide for adding
-custom statistics.
+Terms are specified as function calls on the right-hand side of model formulas (e.g., `formula = ~ intercept() + inertia() + reciprocity()`). This vignette details the mathematical definitions of all supported sufficient statistics alongside examples of how they are specified in formula objects.
 
-The complete list of available formula terms is documented in the
-`redeem_terms` reference manual page. For model estimation, see
-the help pages for the models via `dem` and `rem`.
+For details on estimation procedures and options, see the help pages for `rem()`, `dem()`, and `control.redeem()`.
 
 ---
 
 ## Statistic Transformations
 
-Each sufficient statistic $s_{i,j}(\mathscr{H}_t)$ is defined as a transformed count
-$f(N(t))$, where $N(t)$ is a raw network statistic. The package supports five
-standard transformations $f(\cdot)$:
+Each sufficient statistic $s_{i,j}(\mathscr{H}_t)$ can be modified by applying a transformation function $f(\cdot)$ to a raw network statistic $x$. The package supports five standard transformations:
 
-| Transformation | Mathematical Definition |
-| :--- | :--- |
-| **`identity`** | $f(s) = s$ |
-| **`log`** | $f(s) = \log(1 + s)$ |
-| **`recip`** | $f(s) = 1/(1+s)$ |
-| **`bin`** | $f(s) = \mathbb{I}(s > 0)$ |
-| **`sig`** | $f(s) = \frac{s}{s + K}$ |
+| Transformation | Mathematical Definition | R Formula Syntax |
+| :--- | :--- | :--- |
+| **`identity`** (default) | $f(x) = x$ | `transformation = "identity"` |
+| **`log`** | $f(x) = \log(1 + x)$ | `transformation = "log"` |
+| **`recip`** | $f(x) = \frac{1}{1 + x}$ | `transformation = "recip"` |
+| **`bin`** | $f(x) = \mathbb{I}(x > 0)$ | `transformation = "bin"` |
+| **`sig`** | $f(x) = \frac{x}{x + K}$ | `transformation = "sig", K = 1` |
 
+#### Formula Examples
+
+Transformations can be passed to any statistic via the `transformation` argument (and optional `K` parameter):
+
+```r
+# Default identity transformation
+formula_1 <- ~ inertia(transformation = "identity")
+# Log-transformed count statistic
+formula_2 <- ~ inertia(transformation = "log")
+# Binary indicator (has dyad interacted at least once?)
+formula_3 <- ~ reciprocity(transformation = "bin")
+# Sigmoid-like saturation with parameter K = 5
+formula_4 <- ~ general_common_partners(type = "OSP", transformation = "sig", K = 5)
+```
 
 ---
 
-## Endogenous Network Statistics
+## Baseline and Nuisance Terms
 
-These statistics capture structural dependencies within the network evolution.
+These terms model baseline rates, step-function temporal variations, and actor-level fixed effects.
 
-### 1. Intercept (`Intercept` / `intercept`)
-A constant term representing the baseline log-intensity.
+#### 1. Intercept (`intercept` / `Intercept`)
+
+Represents a constant baseline log-intensity across all dyads.
+
 $$s_{i,j}(\mathscr{H}_t) = 1$$
 
-### 2. Inertia (`inertia` / `number_interaction`)
-Counts how many times the dyad $(i,j)$ has initiated an interaction in the past.
-$$s_{i,j}(\mathscr{H}_t) = f(N_{i,j}(t))$$
-where $N_{i,j}(t) = \sum_{k: t_k < t} \mathbb{I}(i_k = i, j_k = j)$ (or the windowed
-version $N_{i,j}^w(t) = \sum_{k: t-w < t_k < t} \mathbb{I}(i_k = i, j_k = j)$).
+```r
+~ intercept()
+```
 
-### 3. Reciprocity (`reciprocity`)
-Models the tendency to reciprocate past interactions (directed only).
-$$s_{i,j}(\mathscr{H}_t) = f(N_{j,i}(t))$$
+#### 2. Time-Varying Baseline (`baseline`)
 
-### 4. Duration (`duration` / `current_interaction`)
-Measures the dependency on the time since the current interaction started (DEM only).
-$$s_{i,j}(\mathscr{H}_t) = \begin{cases} f(t - t_{\text{start, } i,j}) & \text{if dyad } (i,j) \text{ is interacting at } t \\ 0 & \text{otherwise} \end{cases}$$
-where $t_{\text{start, } i,j}$ is the timestamp of the last formation event.
+Captures temporal variation by fitting a piece-wise constant baseline across user-specified change points $0 = c_0 < c_1 < \dots < c_Q$.
 
-### 5. Participation Shifts (P-shifts)
-P-shifts capture the sequential dependencies between consecutive events (REM only).
-Let the preceding event in the stream be $A \to B$. For a candidate event
-$i \to j$ at time $t$:
+$$s_{i,j}(\mathscr{H}_t) = \sum_{q=1}^Q \mathbb{I}(c_{q-1} \le t < c_q)$$
 
-- **`psABBA`** (Reciprocation): $s_{i,j}(t) = \mathbb{I}(i = B, j = A)$
-- **`psABBY`** (Receiver turn-continuing): $s_{i,j}(t) = \mathbb{I}(i = B, j \ne A, j \ne B)$
-- **`psABAY`** (Sender turn-continuing): $s_{i,j}(t) = \mathbb{I}(i = A, j \ne A, j \ne B)$
-- **`psABXA`** (Usurpation to sender): $s_{i,j}(t) = \mathbb{I}(i \ne A, i \ne B, j = A)$
-- **`psABXB`** (Usurpation to receiver): $s_{i,j}(t) = \mathbb{I}(i \ne A, i \ne B, j = B)$
-- **`psABXY`** (Completely new dyad): $s_{i,j}(t) = \mathbb{I}(i \ne A, i \ne B, j \ne A, j \ne B)$
+```r
+# Piece-wise constant baseline changing at times 10, 25, and 50
+~ baseline(changepoints = c(10, 25, 50))
+# Baseline with custom labels
+~ baseline(changepoints = c(100, 200), labels = c("Phase1", "Phase2", "Phase3"))
+```
+
+#### 3. Degree Fixed Effects (`degree` / `degrees`)
+
+Adds node-specific sender and receiver baseline parameters ($\alpha_i$ and $\gamma_j$) estimated efficiently via Minorization-Maximization (MM) steps. 
+For directed events, fixed sender and receiver effects are included:
+$$\alpha_i + \gamma_j$$
+To make the model identifiable, we set the first finite sender parameter to zero. 
+For undirected events, fixed popularity effects are included:
+$$\alpha_i + \alpha_j$$
+In this case, no constraints are needed for identifiability. However, no additional intercept can be included. 
+For isolated actors, the corresponding fixed effect is set to $-\infty$.
+
+```r
+~ degrees + reciprocity()
+```
+
+---
+
+## Endogenous Dyadic Terms
+
+Endogenous dyadic terms capture direct past interaction tendencies between unit pairs $(i,j)$.
+
+#### 1. Inertia (`inertia` / `number_interaction`)
+
+Measures the tendency for dyads with past interactions to interact again. Let $N_{i,j}(t)$ be the total events from $i$ to $j$ before time $t$, and $N_{i,j}^w(t) = \sum_{k: t-w < t_k < t} \mathbb{I}(i_k = i, j_k = j)$ be the count within time window $w$.
+
+$$s_{i,j}(\mathscr{H}_t) = f(N_{i,j}(t)) \quad \text{or} \quad f(N_{i,j}^w(t))$$
+
+```r
+# Cumulative interaction count (identity transformation)
+~ inertia()
+# Log-transformed inertia evaluated over a 30-day window
+~ inertia(transformation = "log", window = 30)
+# Inertia calculated from a secondary event stream
+~ inertia(event_stream = external_events)
+# Alternative name for inertia
+~ number_interaction(transformation = "log")
+```
+
+#### 2. Reciprocity (`reciprocity`)
+
+Measures the tendency of $i \to j$ interactions to be triggered by past $j \to i$ interactions (directed networks only).
+
+$$s_{i,j}(\mathscr{H}_t) = f(N_{j,i}(t)) \quad \text{or} \quad f(N_{j,i}^w(t))$$
+
+```r
+# Cumulative reciprocity
+~ reciprocity()
+# Binary reciprocity indicator over a 14-unit window
+~ reciprocity(transformation = "bin", window = 14)
+```
+
+#### 3. Duration (`duration` / `current_interaction`)
+
+Measures dependency on the time elapsed since the current interaction started (DEM dissolution process only).
+
+$$s_{i,j}(\mathscr{H}_t) = \begin{cases} f(t - t_{\text{start}, i,j}) & \text{if dyad } (i,j) \text{ is active at } t \\ 0 & \text{otherwise} \end{cases}$$
+
+```r
+# Elapsed duration (identity transformation)
+~ duration()
+# Log-transformed duration for DEM dissolution formulas
+~ duration(transformation = "log")
+# Alternative name
+~ current_interaction(transformation = "log")
+```
+
+#### 4. Participation Shifts (`ps` / `psABBA`, `psABBY`, `psABAY`, `psABXA`, `psABXB`, `psABXY`)
+
+Participation shifts capture immediate sequential dependencies between consecutive events (REM only). Let the previous event be $A \to B$. For candidate event $C \to D$ at time $t$:
+
+| Term Function | Shorthand Mode | Math Definition | Description |
+| :--- | :--- | :--- | :--- |
+| `psABBA()` | `mode = "ABBA"` | $\mathbb{I}(C = B, D = A)$ | Direct reciprocation ($B \to A$) |
+| `psABBY()` | `mode = "ABBY"` | $\mathbb{I}(C = B, D \ne A, D \ne B)$ | Receiver turn-continuing ($B \to Y$) |
+| `psABAY()` | `mode = "ABAY"` | $\mathbb{I}(C = A, D \ne A, D \ne B)$ | Sender turn-continuing ($A \to Y$) |
+| `psABXA()` | `mode = "ABXA"` | $\mathbb{I}(C \ne A, C \ne B, D = A)$ | Usurpation to sender ($X \to A$) |
+| `psABXB()` | `mode = "ABXB"` | $\mathbb{I}(C \ne A, C \ne B, D = B)$ | Usurpation to receiver ($X \to B$) |
+| `psABXY()` | `mode = "ABXY"` | $\mathbb{I}(C \ne A, C \ne B, D \ne A, D \ne B)$ | Completely new dyad ($X \to Y$) |
+
+```r
+~ psABBA() + psABBY() + psABAY()
+# Convenience terms
+~ ps(mode = "ABBA") + ps(mode = "ABAY")
+```
 
 ---
 
 ## Triadic Closure and Shared Partners
 
-Triadic statistics capture structural closure. They can be calculated over
-active edges (designated as **`current_`** in DEM) or historical event existence
-(designated as **`general_`** in REM/DEM). Let $\mathcal{A}_t$ represent the set of
-interacting dyads (for `current_`) or previously interacted dyads (for
-`general_`) at time $t$.
+Triadic terms capture structural closure via shared third-party nodes $k$. Statistics can be based on historical event existence (`general_`, REM/DEM) or currently active edges (`current_`, DEM only).
 
-### Common Partners (`general_common_partners` / `current_common_partners`)
-Counts the number of third-party actors $k$ sharing a connection of a specified
-type with both $i$ and $j$:
+#### 1. Common Partners (`general_common_partners` / `current_common_partners` / `common_partner`)
 
-- **`OSP`** (Outgoing Shared Partner): $s_{i,j}(t) = f(|\{k : (i,k) \in \mathcal{A}_t \land (j,k) \in \mathcal{A}_t\}|)$
-- **`ISP`** (Incoming Shared Partner): $s_{i,j}(t) = f(|\{k : (k,i) \in \mathcal{A}_t \land (k,j) \in \mathcal{A}_t\}|)$
-- **`OTP`** (Outgoing Two-Path): $s_{i,j}(t) = f(|\{k : (i,k) \in \mathcal{A}_t \land (k,j) \in \mathcal{A}_t\}|)$
-- **`ITP`** (Incoming Two-Path): $s_{i,j}(t) = f(|\{k : (k,i) \in \mathcal{A}_t \land (j,k) \in \mathcal{A}_t\}|)$
+Counts the number of third-party actors $k$ sharing directed paths of a specified type with $i$ and $j$:
 
-### Triangles (`general_triangle` / `current_triangle`)
-Similar to common partners, but only non-zero if the focal dyad itself is active (directed only):
+- **Outgoing Shared Partners (`OSP`)**: Both $i$ and $j$ interact with $k$ ($i \to k$ and $j \to k$).
+  $$s_{i,j}(t) = f\left(\left|\{k : N_{i,k}(t)>0 \land N_{j,k}(t)>0\}\right|\right)$$
+- **Incoming Shared Partners (`ISP`)**: Both $i$ and $j$ receive interactions from $k$ ($k \to i$ and $k \to j$).
+  $$s_{i,j}(t) = f\left(\left|\{k : N_{k,i}(t)>0 \land N_{k,j}(t)>0\}\right|\right)$$
+- **Outgoing Two-Path (`OTP`)**: Path from $i$ through $k$ to $j$ ($i \to k$ and $k \to j$).
+  $$s_{i,j}(t) = f\left(\left|\{k : N_{i,k}(t)>0 \land N_{k,j}(t)>0\}\right|\right)$$
+- **Incoming Two-Path (`ITP`)**: Path from $j$ through $k$ to $i$ ($k \to i$ and $j \to k$).
+  $$s_{i,j}(t) = f\left(\left|\{k : N_{k,i}(t)>0 \land N_{j,k}(t)>0\}\right|\right)$$
 
-- **`OSP`** Triangle: $s_{i,j}(t) = \mathbb{I}((i,j) \in \mathcal{A}_t) \times f(|\{k : (i,k) \in \mathcal{A}_t \land (j,k) \in \mathcal{A}_t\}|)$
-- **`ISP`** Triangle: $s_{i,j}(t) = \mathbb{I}((i,j) \in \mathcal{A}_t) \times f(|\{k : (k,i) \in \mathcal{A}_t \land (k,j) \in \mathcal{A}_t\}|)$
-- **`OTP`** Triangle: $s_{i,j}(t) = \mathbb{I}((i,j) \in \mathcal{A}_t) \times f(|\{k : (i,k) \in \mathcal{A}_t \land (k,j) \in \mathcal{A}_t\}|)$
-- **`ITP`** Triangle: $s_{i,j}(t) = \mathbb{I}((i,j) \in \mathcal{A}_t) \times f(|\{k : (k,i) \in \mathcal{A}_t \land (j,k) \in \mathcal{A}_t\}|)$
+```r
+# Full term names
+~ general_common_partners(type = "OTP", transformation = "log")
+~ current_common_partners(type = "OSP")
+# Convenience terms
+~ common_partner(history = "general", type = "OTP", transformation = "log")
+~ common_partner(history = "current", type = "OSP")
+```
+
+#### 2. Triangles (`general_triangle` / `current_triangle` / `triangle`)
+
+Similar to common partners, but conditional on the focal dyad $(i,j)$ having an active or historical edge (directed networks only):
+
+$$s_{i,j}(t) = \mathbb{I}((i,j) \in \mathcal{A}_t) \times f\left(|CP_{i,j}^{\text{type}}(t)|\right)$$
+
+```r
+# Historical OTP triangle (log transformed)
+~ general_triangle(type = "OTP", transformation = "log")
+# Active OSP triangle in DEM
+~ current_triangle(type = "OSP")
+# Convenience terms
+~ triangle(history = "general", type = "OTP")
+~ triangle(history = "current", type = "OSP")
+```
 
 ---
 
 ## Degree and Centrality Statistics
 
-These statistics capture actor-level activity or popularity. Let $\mathcal{D}_t$ be the
-network state at time $t$, and $d_{i, \text{out}}(t)$, $d_{i, \text{in}}(t)$ represent the
-out-degree and in-degree of $i$ in $\mathcal{D}_t$. Let $c_{i, \text{out}}(t)$,
-$c_{i, \text{in}}(t)$ be the total out-events and in-events involving $i$.
+Degree and event-count statistics capture actor activity and popularity. Let $d_{i,\text{out}}(t)$ and $d_{i,\text{in}}(t)$ be node $i$'s out- and in-degrees at time $t$, and $c_{i,\text{out}}(t)$, $c_{i,\text{in}}(t)$ be node $i$'s total sent and received event counts.
 
-### Degree Statistics (`general_degree_out_sender`, etc.)
+#### 1. Binary Degree Statistics (`general_degree_*`, `current_degree_*`, `degree`)
 
-- **Out-Degree Sender**: $s_{i,j}(t) = f(d_{i, \text{out}}(t))$
-- **Out-Degree Receiver**: $s_{i,j}(t) = f(d_{j, \text{out}}(t))$
-- **In-Degree Sender**: $s_{i,j}(t) = f(d_{i, \text{in}}(t))$
-- **In-Degree Receiver**: $s_{i,j}(t) = f(d_{j, \text{in}}(t))$
-- **Degree Sum** (undirected only): $s_{i,j}(t) = f(d_{i}(t) + d_{j}(t))$
-- **Degree Absolute Difference** (undirected only): $s_{i,j}(t) = f(\|d_{i}(t) - d_{j}(t)\|)$
+Captures structural centrality based on unique interaction partners (binary degree).
 
-### Count Statistics (`general_count_out_sender`, etc.)
+- **Sender Out-Degree**: $s_{i,j}(t) = f(d_{i,\text{out}}(t))$
+- **Receiver Out-Degree**: $s_{i,j}(t) = f(d_{j,\text{out}}(t))$
+- **Sender In-Degree**: $s_{i,j}(t) = f(d_{i,\text{in}}(t))$
+- **Receiver In-Degree**: $s_{i,j}(t) = f(d_{j,\text{in}}(t))$
+- **Degree Sum** (undirected networks): $s_{i,j}(t) = f(d_{i}(t) + d_{j}(t))$
+- **Degree Absolute Difference** (undirected networks): $s_{i,j}(t) = f(|d_{i}(t) - d_{j}(t)|)$
 
-Count statistics are identical to degree statistics but use total interaction
-counts ($c$) rather than binary degrees ($d$):
+```r
+~ general_degree_out_sender() + general_degree_in_receiver()
+~ current_degree_sum(transformation = "log")
+# Convenience terms
+~ degree(type = "out_sender", history = "general")
+~ degree(type = "in_receiver", history = "current")
+~ degree(type = "sum", history = "general", transformation = "log")
+~ degree(type = "absdiff", history = "general")
+```
 
-- **Out-Count Sender**: $s_{i,j}(t) = f(c_{i, \text{out}}(t))$
-- **Out-Count Receiver**: $s_{i,j}(t) = f(c_{j, \text{out}}(t))$
-- **In-Count Sender**: $s_{i,j}(t) = f(c_{i, \text{in}}(t))$
-- **In-Count Receiver**: $s_{i,j}(t) = f(c_{j, \text{in}}(t))$
-- **Count Sum** (undirected only): $s_{i,j}(t) = f(c_{i}(t) + c_{j}(t))$
-- **Count Absolute Difference** (undirected only): $s_{i,j}(t) = f(\|c_{i}(t) - c_{j}(t)\|)$
+#### 2. Weighted Event Count Statistics (`general_count_*`, `current_count_*`, `count`)
 
-All of these degree and count statistics can be conveniently specified in model
-formulas using the `degree()` (or `degrees()`) and `count()` helper functions:
+Identical to degree statistics, but computed using total interaction event counts ($c$) rather than binary degrees ($d$).
 
-- **Out-Degree / Out-Count Sender**: `degree(type = "out_sender")` or
-  `count(type = "out_sender")`
-- **Out-Degree / Out-Count Receiver**: `degree(type = "out_receiver")` or
-  `count(type = "out_receiver")`
-- **In-Degree / In-Count Sender**: `degree(type = "in_sender")` or
-  `count(type = "in_sender")`
-- **In-Degree / In-Count Receiver**: `degree(type = "in_receiver")` or
-  `count(type = "in_receiver")`
-- **Degree / Count Sum**: `degree(type = "sum")` or `count(type = "sum")`
-- **Degree / Count Absolute Difference**: `degree(type = "absdiff")` or
-  `count(type = "absdiff")`
+- **Sender Out-Count**: $s_{i,j}(t) = f(c_{i,\text{out}}(t))$
+- **Receiver In-Count**: $s_{i,j}(t) = f(c_{j,\text{in}}(t))$
+- **Count Sum** (undirected networks): $s_{i,j}(t) = f(c_{i}(t) + c_{j}(t))$
+- **Count Absolute Difference** (undirected networks): $s_{i,j}(t) = f(|c_{i}(t) - c_{j}(t)|)$
+
+```r
+~ general_count_out_sender(transformation = "log")
+~ current_count_sum()
+# Convenience terms
+~ count(type = "out_sender", history = "general", transformation = "log")
+~ degree(type = "out_sender", history = "general", count = TRUE)
+```
 
 ---
 
 ## Exogenous Statistics
 
-### 1. Dyadic Covariate (`dyadic_cov`)
-$$s_{i,j}(\mathscr{H}_t) = f(X_{i,j}(t))$$
-where $X(t)$ is an $N \times N$ matrix.
+Exogenous statistics incorporate external nodal or dyadic covariates into model formulas.
 
-### 2. Monadic Covariate (`monadic_cov`)
+#### 1. Dyadic Covariate (`dyadic_cov`)
+
+Incorporates an external $N \times N$ dyadic covariate matrix $X(t)$ (constant or time-varying).
+
+$$s_{i,j}(\mathscr{H}_t) = f(X_{i,j}(t))$$
+
+```r
+# Constant dyadic matrix (must of size N x N)
+~ dyadic_cov(data = dist_matrix)
+# Time-varying dyadic matrix list across change points
+cov_list <- list("0" = matrix1, "50" = matrix2)
+~ dyadic_cov(data = cov_list, change_points = c(0, 50))
+```
+
+#### 2. Monadic Covariate (`monadic_cov`)
+
+Transforms external node-level attributes $x(t)$ into a dyadic matrix using a user-specified function $g(x_i, x_j)$.
+
 $$s_{i,j}(\mathscr{H}_t) = g(x_i(t), x_j(t))$$
-where $x$ is a monadic vector and $g(\cdot)$ is a user-defined function.
+
+```r
+# Absolute difference in age (homophily)
+~ monadic_cov(data = age_vector, fun = function(u, v) abs(u - v))
+# Sender main effect
+~ monadic_cov(data = status_vector, fun = function(u, v) u)
+# Receiver main effect 
+~ monadic_cov(data = status_vector, fun = function(u, v) v)
+# Product interaction
+~ monadic_cov(data = status_vector, fun = function(u, v) u * v)
+```
+
