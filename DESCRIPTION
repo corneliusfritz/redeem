@@ -1,7 +1,7 @@
 Package: redeem
 Type: Package
 Title: Relational Event and Durational Event Models
-Version: 1.0.0
+Version: 1.1.0
 Date: 2026-06-18
 Author: Cornelius Fritz [aut, cre]
 Maintainer: Cornelius Fritz <corneliusfritz2010@gmail.com>
