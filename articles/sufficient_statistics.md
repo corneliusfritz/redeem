@@ -18,14 +18,15 @@ structural statistics \\s\_{i,j}(\mathscr{H}\_t)\\ calculated from event
 history \\\mathscr{H}\_t\\:
 
 \\\lambda\_{i,j}(t) = \exp\left(s\_{i,j}(\mathscr{H}\_t)^\top \beta +
-\alpha_i + \alpha_j + f(t, \gamma)\right)\\
+\alpha_i + \gamma_j + f(t, \gamma)\right)\\
 
 where:
 
 - \\s\_{i,j}(\mathscr{H}\_t)\\ is a vector of **sufficient statistics**
   derived from history \\\mathscr{H}\_t\\ up to time \\t\\.
-- \\\alpha_i, \alpha_j\\ are actor popularity / activity fixed effects
-  (specified via `degree` or `degrees`).
+- \\\alpha_i, \gamma_j\\ are in- and out-going fixed degree effects
+  (specified via `degree` or `degrees` and \\\gamma_i = \alpha_i\\ for
+  undirected events).
 - \\f(t, \gamma) = \sum\_{q=1}^Q \gamma_q \mathbb{I}(c\_{q-1} \le t \<
   c_q)\\ is a baseline step-function over change points \\0 = c_0 \< c_1
   \< \dots \< c_Q\\ (specified via
@@ -91,6 +92,8 @@ Represents a constant baseline log-intensity across all dyads.
 ``` r
 
 ~ intercept()
+# Equivalent representation
+~ Intercept()
 ```
 
 #### 2. Time-Varying Baseline (`baseline`)
@@ -123,7 +126,9 @@ effect is set to \\-\infty\\.
 
 ``` r
 
-~ degrees + reciprocity()
+~ degrees
+# Alternative name
+~ degree
 ```
 
 ------------------------------------------------------------------------
@@ -302,6 +307,8 @@ Captures structural centrality based on unique interaction partners
 ~ degree(type = "in_receiver", history = "current")
 ~ degree(type = "sum", history = "general", transformation = "log")
 ~ degree(type = "absdiff", history = "general")
+# Note that leaving away the bracets (~ degree) refers to 
+# the degree statistics mentioned above
 ```
 
 #### 2. Weighted Event Count Statistics (`general_count_*`, `current_count_*`, `count`)
@@ -341,7 +348,7 @@ Incorporates an external \\N \times N\\ dyadic covariate matrix \\X(t)\\
 
 ``` r
 
-# Constant dyadic matrix (must of size N x N)
+# Constant dyadic matrix (must be of size N x N)
 ~ dyadic_cov(data = dist_matrix)
 # Time-varying dyadic matrix list across change points
 cov_list <- list("0" = matrix1, "50" = matrix2)

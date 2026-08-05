@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">redeem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,7 +86,7 @@ right-hand side of R formulas passed to <code><a href="../reference/rem.html">re
 <code><a href="../reference/dem.html">dem()</a></code> via structural statistics <span class="math inline">\(s_{i,j}(\mathscr{H}_t)\)</span> calculated from
 event history <span class="math inline">\(\mathscr{H}_t\)</span>:</p>
 <p><span class="math display">\[\lambda_{i,j}(t) =
-\exp\left(s_{i,j}(\mathscr{H}_t)^\top \beta + \alpha_i + \alpha_j + f(t,
+\exp\left(s_{i,j}(\mathscr{H}_t)^\top \beta + \alpha_i + \gamma_j + f(t,
 \gamma)\right)\]</span></p>
 <p>where:</p>
 <ul>
@@ -95,9 +95,10 @@ event history <span class="math inline">\(\mathscr{H}_t\)</span>:</p>
 vector of <strong>sufficient statistics</strong> derived from history
 <span class="math inline">\(\mathscr{H}_t\)</span> up to time <span class="math inline">\(t\)</span>.</li>
 <li>
-<span class="math inline">\(\alpha_i, \alpha_j\)</span> are actor
-popularity / activity fixed effects (specified via <code>degree</code>
-or <code>degrees</code>).</li>
+<span class="math inline">\(\alpha_i, \gamma_j\)</span> are in- and
+out-going fixed degree effects (specified via <code>degree</code> or
+<code>degrees</code> and <span class="math inline">\(\gamma_i =
+\alpha_i\)</span> for undirected events).</li>
 <li>
 <span class="math inline">\(f(t, \gamma) = \sum_{q=1}^Q \gamma_q
 \mathbb{I}(c_{q-1} \le t &lt; c_q)\)</span> is a baseline step-function
@@ -194,7 +195,9 @@ and actor-level fixed effects.</p>
 <p>Represents a constant baseline log-intensity across all dyads.</p>
 <p><span class="math display">\[s_{i,j}(\mathscr{H}_t) = 1\]</span></p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="op">~</span> <span class="fu"><a href="../reference/redeem_terms.html">intercept</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="op">~</span> <span class="fu"><a href="../reference/redeem_terms.html">intercept</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co"># Equivalent representation</span></span>
+<span><span class="op">~</span> <span class="fu"><a href="../reference/redeem_terms.html">Intercept</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="time-varying-baseline-baseline">2. Time-Varying Baseline (<code>baseline</code>)<a class="anchor" aria-label="anchor" href="#time-varying-baseline-baseline"></a>
@@ -224,7 +227,9 @@ effects are included: <span class="math display">\[\alpha_i +
 identifiability. However, no additional intercept can be included. For
 isolated actors, the corresponding fixed effect is set to <span class="math inline">\(-\infty\)</span>.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="op">~</span> <span class="va">degrees</span> <span class="op">+</span> <span class="fu"><a href="../reference/redeem_terms.html">reciprocity</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="op">~</span> <span class="va">degrees</span></span>
+<span><span class="co"># Alternative name</span></span>
+<span><span class="op">~</span> <span class="va">degree</span></span></code></pre></div>
 <hr>
 </div>
 </div>
@@ -474,7 +479,9 @@ d_{j}(t)|)\)</span>
 <span><span class="op">~</span> <span class="fu"><a href="../reference/redeem_terms.html">degree</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"out_sender"</span>, history <span class="op">=</span> <span class="st">"general"</span><span class="op">)</span></span>
 <span><span class="op">~</span> <span class="fu"><a href="../reference/redeem_terms.html">degree</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"in_receiver"</span>, history <span class="op">=</span> <span class="st">"current"</span><span class="op">)</span></span>
 <span><span class="op">~</span> <span class="fu"><a href="../reference/redeem_terms.html">degree</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"sum"</span>, history <span class="op">=</span> <span class="st">"general"</span>, transformation <span class="op">=</span> <span class="st">"log"</span><span class="op">)</span></span>
-<span><span class="op">~</span> <span class="fu"><a href="../reference/redeem_terms.html">degree</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"absdiff"</span>, history <span class="op">=</span> <span class="st">"general"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">~</span> <span class="fu"><a href="../reference/redeem_terms.html">degree</a></span><span class="op">(</span>type <span class="op">=</span> <span class="st">"absdiff"</span>, history <span class="op">=</span> <span class="st">"general"</span><span class="op">)</span></span>
+<span><span class="co"># Note that leaving away the bracets (~ degree) refers to </span></span>
+<span><span class="co"># the degree statistics mentioned above</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="weighted-event-count-statistics-general_count_-current_count_-count">2. Weighted Event Count Statistics (<code>general_count_*</code>,
@@ -521,7 +528,7 @@ N\)</span> dyadic covariate matrix <span class="math inline">\(X(t)\)</span> (co
 <p><span class="math display">\[s_{i,j}(\mathscr{H}_t) =
 f(X_{i,j}(t))\]</span></p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Constant dyadic matrix (must of size N x N)</span></span>
+<code class="sourceCode R"><span><span class="co"># Constant dyadic matrix (must be of size N x N)</span></span>
 <span><span class="op">~</span> <span class="fu"><a href="../reference/redeem_terms.html">dyadic_cov</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">dist_matrix</span><span class="op">)</span></span>
 <span><span class="co"># Time-varying dyadic matrix list across change points</span></span>
 <span><span class="va">cov_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"0"</span> <span class="op">=</span> <span class="va">matrix1</span>, <span class="st">"50"</span> <span class="op">=</span> <span class="va">matrix2</span><span class="op">)</span></span>
