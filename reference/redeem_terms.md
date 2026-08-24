@@ -53,88 +53,6 @@ The implemented terms are grouped into five categories:
 
 5.  **Exogenous Covariates**: Dyadic and monadic covariate terms.
 
-## Arguments
-
-- K:
-
-  Numeric; the evaluation point or scaling/saturation factor for the
-  sufficient statistic (default is 1).
-
-- transformation:
-
-  Character; specifies the transformation to apply to the statistic. One
-  of:
-
-  - `"identity"` (default): \\f(x) = x\\
-
-  - `"log"`: \\f(x) = \log(x+1)\\
-
-  - `"recip"`: \\f(x) = 1/(x+1)\\
-
-  - `"bin"`: \\f(x) = I(x\>0)\\
-
-  - `"sig"`: sigmoid-like saturation, \\f(x) = x/(x+K)\\
-
-- event_stream:
-
-  Optional matrix or data frame; an alternative event stream to use for
-  calculating the statistic. If `NULL` (default), the modeled stream is
-  used.
-
-- window:
-
-  Numeric; time window for calculating the statistic (default `Inf`,
-  i.e., use full history).
-
-- type:
-
-  Character; the specific variation of the statistic or triangle type
-  (e.g., `"OSP"`, `"ISP"`, `"OTP"`, `"ITP"`, `"out_sender"`, `"sum"`).
-
-- mode:
-
-  Character; the participation shift mode (e.g., `"ABBA"`, `"ABBY"`).
-
-- data:
-
-  For `dyadic_cov`, a numeric matrix of dimensions \\N \times N\\, a
-  scalar applied globally, or a named list of matrices for time-varying
-  covariates. For `monadic_cov`, a numeric vector of length \\N\\ or a
-  named list of vectors for time-varying covariates.
-
-- fun:
-
-  A function taking two arguments `fun(v_i, v_j)` to generate dyadic
-  values.
-
-- change_points:
-
-  Optional numeric vector; time points for time-varying covariates if
-  `data` is a list.
-
-- changepoints:
-
-  Numeric vector; time points where the baseline intensity is allowed to
-  change.
-
-- labels:
-
-  Character vector; optional labels for the resulting time intervals.
-
-- history:
-
-  Character; `"general"` for cumulative history or `"current"` for
-  currently active events.
-
-- count:
-
-  Logical; if `TRUE`, uses count-based (weighted) versions of degree
-  statistics (default `FALSE`).
-
-- ...:
-
-  Arguments passed to the underlying initialization function.
-
 ## Value
 
 A `redeem_term` object (a list containing structural information about
@@ -388,3 +306,85 @@ automatically handles the splintering and union of these timelines.
 - `monadic_cov(data, fun, change_points)`: Monadic Covariate: External
   monadic covariate vector \\x\\ converted to a dyadic matrix via
   user-supplied function \\g\\. \\s\_{i,j}(t) = g(x_i(t),\\ x_j(t))\\.
+
+## Term Arguments
+
+- `K`:
+
+  Numeric; the evaluation point or scaling/saturation factor for the
+  sufficient statistic (default is 1).
+
+- `transformation`:
+
+  Character; specifies the transformation to apply to the statistic. One
+  of:
+
+  - `"identity"` (default): \\f(x) = x\\
+
+  - `"log"`: \\f(x) = \log(x+1)\\
+
+  - `"recip"`: \\f(x) = 1/(x+1)\\
+
+  - `"bin"`: \\f(x) = I(x\>0)\\
+
+  - `"sig"`: sigmoid-like saturation, \\f(x) = x/(x+K)\\
+
+- `event_stream`:
+
+  Optional matrix or data frame; an alternative event stream to use for
+  calculating the statistic. If `NULL` (default), the modeled stream is
+  used.
+
+- `window`:
+
+  Numeric; time window for calculating the statistic (default `Inf`,
+  i.e., use full history).
+
+- `type`:
+
+  Character; the specific variation of the statistic or triangle type
+  (e.g., `"OSP"`, `"ISP"`, `"OTP"`, `"ITP"`, `"out_sender"`, `"sum"`).
+
+- `mode`:
+
+  Character; the participation shift mode (e.g., `"ABBA"`, `"ABBY"`).
+
+- `data`:
+
+  For `dyadic_cov`, a numeric matrix of dimensions \\N \times N\\, a
+  scalar applied globally, or a named list of matrices for time-varying
+  covariates. For `monadic_cov`, a numeric vector of length \\N\\ or a
+  named list of vectors for time-varying covariates.
+
+- `fun`:
+
+  A function taking two arguments `fun(v_i, v_j)` to generate dyadic
+  values.
+
+- `change_points`:
+
+  Optional numeric vector; time points for time-varying covariates if
+  `data` is a list.
+
+- `changepoints`:
+
+  Numeric vector; time points where the baseline intensity is allowed to
+  change.
+
+- `labels`:
+
+  Character vector; optional labels for the resulting time intervals.
+
+- `history`:
+
+  Character; `"general"` for cumulative history or `"current"` for
+  currently active events.
+
+- `count`:
+
+  Logical; if `TRUE`, uses count-based (weighted) versions of degree
+  statistics (default `FALSE`).
+
+- `...`:
+
+  Arguments passed to the underlying initialization function.

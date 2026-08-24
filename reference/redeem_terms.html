@@ -148,88 +148,6 @@ on the currently active DEM network.</p>
 
 
     <div class="section level2">
-    <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
-
-
-<dl><dt id="arg-k">K<a class="anchor" aria-label="anchor" href="#arg-k"></a></dt>
-<dd><p>Numeric; the evaluation point or scaling/saturation factor for the
-sufficient statistic (default is 1).</p></dd>
-
-
-<dt id="arg-transformation">transformation<a class="anchor" aria-label="anchor" href="#arg-transformation"></a></dt>
-<dd><p>Character; specifies the transformation to apply to the
-statistic. One of:</p><ul><li><p><code>"identity"</code> (default): \(f(x) = x\)</p></li>
-<li><p><code>"log"</code>: \(f(x) = \log(x+1)\)</p></li>
-<li><p><code>"recip"</code>: \(f(x) = 1/(x+1)\)</p></li>
-<li><p><code>"bin"</code>: \(f(x) = I(x&gt;0)\)</p></li>
-<li><p><code>"sig"</code>: sigmoid-like saturation, \(f(x) = x/(x+K)\)</p></li>
-</ul></dd>
-
-
-<dt id="arg-event-stream">event_stream<a class="anchor" aria-label="anchor" href="#arg-event-stream"></a></dt>
-<dd><p>Optional matrix or data frame; an alternative event
-stream to use for calculating the statistic. If <code>NULL</code> (default),
-the modeled stream is used.</p></dd>
-
-
-<dt id="arg-window">window<a class="anchor" aria-label="anchor" href="#arg-window"></a></dt>
-<dd><p>Numeric; time window for calculating the statistic (default
-<code>Inf</code>, i.e., use full history).</p></dd>
-
-
-<dt id="arg-type">type<a class="anchor" aria-label="anchor" href="#arg-type"></a></dt>
-<dd><p>Character; the specific variation of the statistic or triangle
-type (e.g., <code>"OSP"</code>, <code>"ISP"</code>, <code>"OTP"</code>, <code>"ITP"</code>,
-<code>"out_sender"</code>, <code>"sum"</code>).</p></dd>
-
-
-<dt id="arg-mode">mode<a class="anchor" aria-label="anchor" href="#arg-mode"></a></dt>
-<dd><p>Character; the participation shift mode (e.g., <code>"ABBA"</code>,
-<code>"ABBY"</code>).</p></dd>
-
-
-<dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>For <code>dyadic_cov</code>, a numeric matrix of dimensions
-\(N \times N\), a scalar applied globally, or a named list of matrices
-for time-varying covariates. For <code>monadic_cov</code>, a numeric vector of
-length \(N\) or a named list of vectors for time-varying covariates.</p></dd>
-
-
-<dt id="arg-fun">fun<a class="anchor" aria-label="anchor" href="#arg-fun"></a></dt>
-<dd><p>A function taking two arguments <code>fun(v_i, v_j)</code> to generate
-dyadic values.</p></dd>
-
-
-<dt id="arg-change-points">change_points<a class="anchor" aria-label="anchor" href="#arg-change-points"></a></dt>
-<dd><p>Optional numeric vector; time points for time-varying
-covariates if <code>data</code> is a list.</p></dd>
-
-
-<dt id="arg-changepoints">changepoints<a class="anchor" aria-label="anchor" href="#arg-changepoints"></a></dt>
-<dd><p>Numeric vector; time points where the baseline intensity
-is allowed to change.</p></dd>
-
-
-<dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
-<dd><p>Character vector; optional labels for the resulting time
-intervals.</p></dd>
-
-
-<dt id="arg-history">history<a class="anchor" aria-label="anchor" href="#arg-history"></a></dt>
-<dd><p>Character; <code>"general"</code> for cumulative history or
-<code>"current"</code> for currently active events.</p></dd>
-
-
-<dt id="arg-count">count<a class="anchor" aria-label="anchor" href="#arg-count"></a></dt>
-<dd><p>Logical; if <code>TRUE</code>, uses count-based (weighted) versions
-of degree statistics (default <code>FALSE</code>).</p></dd>
-
-
-<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Arguments passed to the underlying initialization function.</p></dd>
-
-</dl></div>
-    <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>redeem_term</code> object (a list containing structural information about the statistic) to be used inside model formulas.</p>
     </div>
@@ -468,6 +386,76 @@ automatically handles the splintering and union of these timelines.</p>
     user-supplied function \(g\).
     \(s_{i,j}(t) = g(x_i(t),\, x_j(t))\).</p></li>
 </ul></div>
+    <div class="section level2">
+    <h2 id="term-arguments">Term Arguments<a class="anchor" aria-label="anchor" href="#term-arguments"></a></h2>
+
+
+<dl><dt><code>K</code></dt>
+<dd><p>Numeric; the evaluation point or scaling/saturation factor for the
+    sufficient statistic (default is 1).</p></dd>
+
+  <dt><code>transformation</code></dt>
+<dd><p>Character; specifies the transformation to apply to the
+    statistic. One of:</p><ul><li><p><code>"identity"</code> (default): \(f(x) = x\)</p></li>
+<li><p><code>"log"</code>: \(f(x) = \log(x+1)\)</p></li>
+<li><p><code>"recip"</code>: \(f(x) = 1/(x+1)\)</p></li>
+<li><p><code>"bin"</code>: \(f(x) = I(x&gt;0)\)</p></li>
+<li><p><code>"sig"</code>: sigmoid-like saturation, \(f(x) = x/(x+K)\)</p></li>
+</ul></dd>
+
+  <dt><code>event_stream</code></dt>
+<dd><p>Optional matrix or data frame; an alternative event
+    stream to use for calculating the statistic. If <code>NULL</code> (default),
+    the modeled stream is used.</p></dd>
+
+  <dt><code>window</code></dt>
+<dd><p>Numeric; time window for calculating the statistic (default
+    <code>Inf</code>, i.e., use full history).</p></dd>
+
+  <dt><code>type</code></dt>
+<dd><p>Character; the specific variation of the statistic or triangle
+    type (e.g., <code>"OSP"</code>, <code>"ISP"</code>, <code>"OTP"</code>, <code>"ITP"</code>,
+    <code>"out_sender"</code>, <code>"sum"</code>).</p></dd>
+
+  <dt><code>mode</code></dt>
+<dd><p>Character; the participation shift mode (e.g., <code>"ABBA"</code>,
+    <code>"ABBY"</code>).</p></dd>
+
+  <dt><code>data</code></dt>
+<dd><p>For <code>dyadic_cov</code>, a numeric matrix of dimensions
+    \(N \times N\), a scalar applied globally, or a named list of matrices
+    for time-varying covariates. For <code>monadic_cov</code>, a numeric vector of
+    length \(N\) or a named list of vectors for time-varying covariates.</p></dd>
+
+  <dt><code>fun</code></dt>
+<dd><p>A function taking two arguments <code>fun(v_i, v_j)</code> to generate
+    dyadic values.</p></dd>
+
+  <dt><code>change_points</code></dt>
+<dd><p>Optional numeric vector; time points for time-varying
+    covariates if <code>data</code> is a list.</p></dd>
+
+  <dt><code>changepoints</code></dt>
+<dd><p>Numeric vector; time points where the baseline intensity
+    is allowed to change.</p></dd>
+
+  <dt><code>labels</code></dt>
+<dd><p>Character vector; optional labels for the resulting time
+    intervals.</p></dd>
+
+  <dt><code>history</code></dt>
+<dd><p>Character; <code>"general"</code> for cumulative history or
+    <code>"current"</code> for currently active events.</p></dd>
+
+  <dt><code>count</code></dt>
+<dd><p>Logical; if <code>TRUE</code>, uses count-based (weighted) versions
+    of degree statistics (default <code>FALSE</code>).</p></dd>
+
+  <dt><code>...</code></dt>
+<dd><p>Arguments passed to the underlying initialization function.</p></dd>
+
+
+</dl></div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
