@@ -1433,44 +1433,48 @@ InitRedeemTerm.ps <- function(arglist, n_nodes, model_type, directed, ...) {
 #'     \eqn{s_{i,j}(t) = g(x_i(t),\, x_j(t))}.
 #' }
 #'
-#' @param K Numeric; the evaluation point or scaling/saturation factor for the
-#'   sufficient statistic (default is 1).
-#' @param transformation Character; specifies the transformation to apply to the
-#'   statistic. One of:
-#'   \itemize{
-#'     \item \code{"identity"} (default): \eqn{f(x) = x}
-#'     \item \code{"log"}: \eqn{f(x) = \log(x+1)}
-#'     \item \code{"recip"}: \eqn{f(x) = 1/(x+1)}
-#'     \item \code{"bin"}: \eqn{f(x) = I(x>0)}
-#'     \item \code{"sig"}: sigmoid-like saturation, \eqn{f(x) = x/(x+K)}
-#'   }
-#' @param event_stream Optional matrix or data frame; an alternative event
-#'   stream to use for calculating the statistic. If \code{NULL} (default),
-#'   the modeled stream is used.
-#' @param window Numeric; time window for calculating the statistic (default
-#'   \code{Inf}, i.e., use full history).
-#' @param type Character; the specific variation of the statistic or triangle
-#'   type (e.g., \code{"OSP"}, \code{"ISP"}, \code{"OTP"}, \code{"ITP"},
-#'   \code{"out_sender"}, \code{"sum"}).
-#' @param mode Character; the participation shift mode (e.g., \code{"ABBA"},
-#'   \code{"ABBY"}).
-#' @param data For \code{dyadic_cov}, a numeric matrix of dimensions
-#'   \eqn{N \times N}, a scalar applied globally, or a named list of matrices
-#'   for time-varying covariates. For \code{monadic_cov}, a numeric vector of
-#'   length \eqn{N} or a named list of vectors for time-varying covariates.
-#' @param fun A function taking two arguments \code{fun(v_i, v_j)} to generate
-#'   dyadic values.
-#' @param change_points Optional numeric vector; time points for time-varying
-#'   covariates if \code{data} is a list.
-#' @param changepoints Numeric vector; time points where the baseline intensity
-#'   is allowed to change.
-#' @param labels Character vector; optional labels for the resulting time
-#'   intervals.
-#' @param history Character; \code{"general"} for cumulative history or
-#'   \code{"current"} for currently active events.
-#' @param count Logical; if \code{TRUE}, uses count-based (weighted) versions
-#'   of degree statistics (default \code{FALSE}).
-#' @param ... Arguments passed to the underlying initialization function.
+#' @section Term Arguments:
+#' \describe{
+#'   \item{\code{K}}{Numeric; the evaluation point or scaling/saturation factor for the
+#'     sufficient statistic (default is 1).}
+#'   \item{\code{transformation}}{Character; specifies the transformation to apply to the
+#'     statistic. One of:
+#'     \itemize{
+#'       \item \code{"identity"} (default): \eqn{f(x) = x}
+#'       \item \code{"log"}: \eqn{f(x) = \log(x+1)}
+#'       \item \code{"recip"}: \eqn{f(x) = 1/(x+1)}
+#'       \item \code{"bin"}: \eqn{f(x) = I(x>0)}
+#'       \item \code{"sig"}: sigmoid-like saturation, \eqn{f(x) = x/(x+K)}
+#'     }}
+#'   \item{\code{event_stream}}{Optional matrix or data frame; an alternative event
+#'     stream to use for calculating the statistic. If \code{NULL} (default),
+#'     the modeled stream is used.}
+#'   \item{\code{window}}{Numeric; time window for calculating the statistic (default
+#'     \code{Inf}, i.e., use full history).}
+#'   \item{\code{type}}{Character; the specific variation of the statistic or triangle
+#'     type (e.g., \code{"OSP"}, \code{"ISP"}, \code{"OTP"}, \code{"ITP"},
+#'     \code{"out_sender"}, \code{"sum"}).}
+#'   \item{\code{mode}}{Character; the participation shift mode (e.g., \code{"ABBA"},
+#'     \code{"ABBY"}).}
+#'   \item{\code{data}}{For \code{dyadic_cov}, a numeric matrix of dimensions
+#'     \eqn{N \times N}, a scalar applied globally, or a named list of matrices
+#'     for time-varying covariates. For \code{monadic_cov}, a numeric vector of
+#'     length \eqn{N} or a named list of vectors for time-varying covariates.}
+#'   \item{\code{fun}}{A function taking two arguments \code{fun(v_i, v_j)} to generate
+#'     dyadic values.}
+#'   \item{\code{change_points}}{Optional numeric vector; time points for time-varying
+#'     covariates if \code{data} is a list.}
+#'   \item{\code{changepoints}}{Numeric vector; time points where the baseline intensity
+#'     is allowed to change.}
+#'   \item{\code{labels}}{Character vector; optional labels for the resulting time
+#'     intervals.}
+#'   \item{\code{history}}{Character; \code{"general"} for cumulative history or
+#'     \code{"current"} for currently active events.}
+#'   \item{\code{count}}{Logical; if \code{TRUE}, uses count-based (weighted) versions
+#'     of degree statistics (default \code{FALSE}).}
+#'   \item{\code{...}}{Arguments passed to the underlying initialization function.}
+#' }
+#'
 #' @return A \code{redeem_term} object (a list containing structural information about the statistic) to be used inside model formulas.
 #'
 #' @name redeem_terms

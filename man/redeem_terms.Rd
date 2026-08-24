@@ -65,59 +65,6 @@
 \alias{psABXY}
 \alias{ps}
 \title{redeem Model Terms}
-\arguments{
-\item{K}{Numeric; the evaluation point or scaling/saturation factor for the
-sufficient statistic (default is 1).}
-
-\item{transformation}{Character; specifies the transformation to apply to the
-statistic. One of:
-\itemize{
-  \item \code{"identity"} (default): \eqn{f(x) = x}
-  \item \code{"log"}: \eqn{f(x) = \log(x+1)}
-  \item \code{"recip"}: \eqn{f(x) = 1/(x+1)}
-  \item \code{"bin"}: \eqn{f(x) = I(x>0)}
-  \item \code{"sig"}: sigmoid-like saturation, \eqn{f(x) = x/(x+K)}
-}}
-
-\item{event_stream}{Optional matrix or data frame; an alternative event
-stream to use for calculating the statistic. If \code{NULL} (default),
-the modeled stream is used.}
-
-\item{window}{Numeric; time window for calculating the statistic (default
-\code{Inf}, i.e., use full history).}
-
-\item{type}{Character; the specific variation of the statistic or triangle
-type (e.g., \code{"OSP"}, \code{"ISP"}, \code{"OTP"}, \code{"ITP"},
-\code{"out_sender"}, \code{"sum"}).}
-
-\item{mode}{Character; the participation shift mode (e.g., \code{"ABBA"},
-\code{"ABBY"}).}
-
-\item{data}{For \code{dyadic_cov}, a numeric matrix of dimensions
-\eqn{N \times N}, a scalar applied globally, or a named list of matrices
-for time-varying covariates. For \code{monadic_cov}, a numeric vector of
-length \eqn{N} or a named list of vectors for time-varying covariates.}
-
-\item{fun}{A function taking two arguments \code{fun(v_i, v_j)} to generate
-dyadic values.}
-
-\item{change_points}{Optional numeric vector; time points for time-varying
-covariates if \code{data} is a list.}
-
-\item{changepoints}{Numeric vector; time points where the baseline intensity
-is allowed to change.}
-
-\item{labels}{Character vector; optional labels for the resulting time
-intervals.}
-
-\item{history}{Character; \code{"general"} for cumulative history or
-\code{"current"} for currently active events.}
-
-\item{count}{Logical; if \code{TRUE}, uses count-based (weighted) versions
-of degree statistics (default \code{FALSE}).}
-
-\item{...}{Arguments passed to the underlying initialization function.}
-}
 \value{
 A \code{redeem_term} object (a list containing structural information about the statistic) to be used inside model formulas.
 }
@@ -405,6 +352,50 @@ automatically handles the splintering and union of these timelines.
     monadic covariate vector \eqn{x} converted to a dyadic matrix via
     user-supplied function \eqn{g}.
     \eqn{s_{i,j}(t) = g(x_i(t),\, x_j(t))}.
+}
+}
+
+\section{Term Arguments}{
+
+\describe{
+  \item{\code{K}}{Numeric; the evaluation point or scaling/saturation factor for the
+    sufficient statistic (default is 1).}
+  \item{\code{transformation}}{Character; specifies the transformation to apply to the
+    statistic. One of:
+    \itemize{
+      \item \code{"identity"} (default): \eqn{f(x) = x}
+      \item \code{"log"}: \eqn{f(x) = \log(x+1)}
+      \item \code{"recip"}: \eqn{f(x) = 1/(x+1)}
+      \item \code{"bin"}: \eqn{f(x) = I(x>0)}
+      \item \code{"sig"}: sigmoid-like saturation, \eqn{f(x) = x/(x+K)}
+    }}
+  \item{\code{event_stream}}{Optional matrix or data frame; an alternative event
+    stream to use for calculating the statistic. If \code{NULL} (default),
+    the modeled stream is used.}
+  \item{\code{window}}{Numeric; time window for calculating the statistic (default
+    \code{Inf}, i.e., use full history).}
+  \item{\code{type}}{Character; the specific variation of the statistic or triangle
+    type (e.g., \code{"OSP"}, \code{"ISP"}, \code{"OTP"}, \code{"ITP"},
+    \code{"out_sender"}, \code{"sum"}).}
+  \item{\code{mode}}{Character; the participation shift mode (e.g., \code{"ABBA"},
+    \code{"ABBY"}).}
+  \item{\code{data}}{For \code{dyadic_cov}, a numeric matrix of dimensions
+    \eqn{N \times N}, a scalar applied globally, or a named list of matrices
+    for time-varying covariates. For \code{monadic_cov}, a numeric vector of
+    length \eqn{N} or a named list of vectors for time-varying covariates.}
+  \item{\code{fun}}{A function taking two arguments \code{fun(v_i, v_j)} to generate
+    dyadic values.}
+  \item{\code{change_points}}{Optional numeric vector; time points for time-varying
+    covariates if \code{data} is a list.}
+  \item{\code{changepoints}}{Numeric vector; time points where the baseline intensity
+    is allowed to change.}
+  \item{\code{labels}}{Character vector; optional labels for the resulting time
+    intervals.}
+  \item{\code{history}}{Character; \code{"general"} for cumulative history or
+    \code{"current"} for currently active events.}
+  \item{\code{count}}{Logical; if \code{TRUE}, uses count-based (weighted) versions
+    of degree statistics (default \code{FALSE}).}
+  \item{\code{...}}{Arguments passed to the underlying initialization function.}
 }
 }
 
